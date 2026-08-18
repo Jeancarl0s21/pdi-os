@@ -5,7 +5,8 @@ export default function FoundationPublicPage() {
         <p className="font-mono text-sm text-muted-foreground">PDI OS / FOUNDATION</p>
         <h1 className="text-4xl font-semibold tracking-tight">Foundation em validação.</h1>
         <p className="text-muted-foreground">
-          Esta superfície é apenas um shell técnico. O Portfolio final não é implementado nesta fase.
+          Esta superfície é apenas um shell técnico. O Portfolio final não é implementado nesta
+          fase.
         </p>
       </section>
     </main>

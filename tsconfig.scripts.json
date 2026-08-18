@@ -7,13 +7,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "scripts/**/*.ts",
-    "packages/**/*.ts",
-    "tests/**/*.ts"
-  ]
+  "include": ["scripts/**/*.ts", "packages/**/*.ts", "tests/**/*.ts"]
 }

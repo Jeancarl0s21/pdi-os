@@ -8,7 +8,7 @@ export default [
   {
     files: ["**/*.ts", "**/*.tsx", "**/*.mjs"],
     rules: {
-      "no-console": "off"
-    }
-  }
+      "no-console": "off",
+    },
+  },
 ];
