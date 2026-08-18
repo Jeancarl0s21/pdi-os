@@ -5,7 +5,7 @@ test("public Foundation shell renders without serious accessibility violations",
   page,
 }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "PDI OS" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Foundation em validação." })).toBeVisible();
   const results = await new AxeBuilder({ page }).analyze();
   expect(
     results.violations.filter((v) => ["critical", "serious"].includes(v.impact ?? "")),
