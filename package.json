@@ -1,0 +1,52 @@
+{
+  "name": "pdi-os",
+  "version": "0.0.0-foundation",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @pdi-os/web dev",
+    "build": "pnpm --filter @pdi-os/web build",
+    "lint": "pnpm --filter @pdi-os/web lint && eslint scripts packages tests --max-warnings=0",
+    "typecheck": "pnpm --filter @pdi-os/web typecheck && tsc -p tsconfig.scripts.json --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm test:unit && pnpm test:importer",
+    "test:unit": "vitest run --config vitest.config.ts",
+    "test:importer": "vitest run --config vitest.importer.config.ts",
+    "test:db": "pnpm supabase test db",
+    "test:e2e": "playwright test",
+    "db:start": "pnpm supabase start",
+    "db:stop": "pnpm supabase stop",
+    "db:reset": "pnpm supabase db reset",
+    "db:lint": "pnpm supabase db lint --level warning",
+    "seed:validate": "tsx scripts/roadmap-import/cli.ts validate",
+    "seed:dry-run": "tsx scripts/roadmap-import/cli.ts dry-run",
+    "seed:apply": "tsx scripts/roadmap-import/cli.ts apply",
+    "storage:reconcile": "tsx scripts/storage-reconcile/cli.ts",
+    "foundation:check": "node scripts/operational/foundation-static-check.mjs",
+    "ci:local": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.55.0",
+    "@supabase/supabase-js": "^2.55.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.15.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.3.0",
+    "pg": "^8.16.0",
+    "prettier": "^3.6.0",
+    "supabase": "^2.40.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^3.2.0",
+    "zod": "^4.0.0"
+  },
+  "packageManager": "pnpm@10.15.0"
+}

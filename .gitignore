@@ -1,0 +1,49 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+
+# test output
+coverage/
+playwright-report/
+test-results/
+
+# local Supabase runtime
+supabase/.branches/
+supabase/.temp/
+
+# environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.asc
+*.gpg
+
+# backup/restore artifacts
+backups/
+restore-work/
+*.dump
+*.sql.gz
+*.tar.gz.enc
+*.age
+
+# IDE/OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# logs
+*.log
+
+# Python cache
+__pycache__/
+*.pyc

@@ -1,0 +1,16 @@
+begin;
+select plan(12);
+select has_table('public','app_users','app_users exists');
+select has_table('public','tasks','tasks exists');
+select has_table('public','topics','topics exists');
+select has_table('public','contents','contents exists');
+select has_table('public','activities','activities exists');
+select has_table('public','projects','projects exists');
+select has_table('public','study_sessions','study_sessions exists');
+select has_table('public','evidences','evidences exists');
+select has_table('public','seed_import_runs','seed_import_runs exists');
+select has_table('public','seed_tombstones','seed_tombstones exists');
+select has_function('public','complete_topic',array['uuid'],'complete_topic RPC exists');
+select has_function('public','move_task',array['uuid','text','integer'],'move_task RPC exists');
+select * from finish();
+rollback;
