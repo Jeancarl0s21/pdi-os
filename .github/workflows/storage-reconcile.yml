@@ -1,7 +1,7 @@
 name: Storage reconciliation
 on:
   schedule:
-    - cron: '41 5 * * 0'
+    - cron: "41 5 * * 0"
   workflow_dispatch:
 permissions:
   contents: read

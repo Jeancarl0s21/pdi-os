@@ -1,11 +1,11 @@
 name: CodeQL
 on:
   push:
-    branches: [main, 'foundation/**', 'chore/**']
+    branches: [main, "foundation/**", "chore/**"]
   pull_request:
     branches: [main]
   schedule:
-    - cron: '17 5 * * 1'
+    - cron: "17 5 * * 1"
 permissions:
   security-events: write
   packages: read
