@@ -206,7 +206,7 @@ export async function applyImport(
       if (action === "INSERT") {
         const baseCols = ["user_id", "source_key", "source_version", "source_hash", "source_order"];
         const baseVals = [userId, e.sourceKey, seedVersion, e.sourceHash, e.sourceOrder];
-        if (parentCol) {
+        if (parentCol && parentId !== undefined) {
           baseCols.push(parentCol);
           baseVals.push(parentId);
         }
