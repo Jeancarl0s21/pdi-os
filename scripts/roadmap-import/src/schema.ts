@@ -58,7 +58,7 @@ const topicSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   recommended_level: z.string().min(1),
-  priority: z.enum(["Core", "High", "Advanced"]),
+  priority: z.enum(["Core", "High", "Advanced", "Selective"]),
   contents: z.array(contentSchema).min(1),
   activities: z.array(activitySchema).min(1),
   materials: z.array(materialSchema).min(1),
