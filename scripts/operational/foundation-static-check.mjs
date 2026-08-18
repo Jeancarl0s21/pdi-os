@@ -1,3 +1,4 @@
+/* global process, console */
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -31,24 +32,34 @@ const expected = {
   materials: 144,
   projects: 5,
 };
-JSON.stringify(counts) === JSON.stringify(expected)
-  ? pass.push("canonical-seed-counts")
-  : fail.push(`seed-counts:${JSON.stringify(counts)}`);
+if (JSON.stringify(counts) === JSON.stringify(expected)) {
+  pass.push("canonical-seed-counts");
+} else {
+  fail.push(`seed-counts:${JSON.stringify(counts)}`);
+}
 const projectIds = new Set(projects.map((p) => p.id));
-topics.some((t) => t.suggested_projects.some((x) => !projectIds.has(x)))
-  ? fail.push("invalid-project-ref")
-  : pass.push("canonical-project-topic-refs");
-contents.every(
-  (c) => c.explanation && c.example && c.key_points?.length && c.when_to_use && c.pitfalls,
-)
-  ? pass.push("amd-001-didactic-content")
-  : fail.push("amd-001-gap");
+if (topics.some((t) => t.suggested_projects.some((x) => !projectIds.has(x)))) {
+  fail.push("invalid-project-ref");
+} else {
+  pass.push("canonical-project-topic-refs");
+}
+if (
+  contents.every(
+    (c) => c.explanation && c.example && c.key_points?.length && c.when_to_use && c.pitfalls,
+  )
+) {
+  pass.push("amd-001-didactic-content");
+} else {
+  fail.push("amd-001-gap");
+}
 const migrations = fs
   .readdirSync(path.join(root, "supabase/migrations"))
   .filter((x) => x.endsWith(".sql"));
-migrations.length === 10
-  ? pass.push("ten-versioned-migrations")
-  : fail.push(`migrations:${migrations.length}`);
+if (migrations.length === 10) {
+  pass.push("ten-versioned-migrations");
+} else {
+  fail.push(`migrations:${migrations.length}`);
+}
 const runbooks = [
   "DEPLOY.md",
   "DATABASE_MIGRATION.md",
@@ -63,7 +74,11 @@ const runbooks = [
   "PRODUCTION_SMOKE.md",
 ];
 const missing = runbooks.filter((x) => !fs.existsSync(path.join(root, "docs/runbooks", x)));
-missing.length ? fail.push(`missing-runbooks:${missing.join(",")}`) : pass.push("eleven-runbooks");
+if (missing.length) {
+  fail.push(`missing-runbooks:${missing.join(",")}`);
+} else {
+  pass.push("eleven-runbooks");
+}
 function walk(dir) {
   return fs
     .readdirSync(dir, { withFileTypes: true })
@@ -77,9 +92,11 @@ function walk(dir) {
 }
 const files = walk(root);
 const rel = files.map((f) => path.relative(root, f));
-rel.some((f) => /^apps[\\/]api[\\/]/.test(f) || /nx\.json|turbo\.json/i.test(f))
-  ? fail.push("forbidden-extra-deployable-or-orchestrator")
-  : pass.push("single-application-deployable");
+if (rel.some((f) => /^apps[\\/]api[\\/]/.test(f) || /nx\.json|turbo\.json/i.test(f))) {
+  fail.push("forbidden-extra-deployable-or-orchestrator");
+} else {
+  pass.push("single-application-deployable");
+}
 const secretPatterns = [
   /-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/,
   /ghp_[A-Za-z0-9]{30,}/,
@@ -92,12 +109,16 @@ for (const f of files) {
   const t = fs.readFileSync(f, "utf8");
   if (secretPatterns.some((r) => r.test(t))) hits.push(path.relative(root, f));
 }
-hits.length
-  ? fail.push(`possible-secret:${hits.join(",")}`)
-  : pass.push("static-secret-pattern-scan");
-rel.some((f) => /PDI_OS_.*\.(docx|pdf)$/i.test(f))
-  ? fail.push("source-binary-in-repo")
-  : pass.push("no-source-doc-binaries");
+if (hits.length) {
+  fail.push(`possible-secret:${hits.join(",")}`);
+} else {
+  pass.push("static-secret-pattern-scan");
+}
+if (rel.some((f) => /PDI_OS_.*\.(docx|pdf)$/i.test(f))) {
+  fail.push("source-binary-in-repo");
+} else {
+  pass.push("no-source-doc-binaries");
+}
 console.log(
   JSON.stringify(
     {
