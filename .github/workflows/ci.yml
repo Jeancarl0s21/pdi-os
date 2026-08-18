@@ -54,7 +54,7 @@ jobs:
 
   e2e:
     name: e2e-a11y
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +74,6 @@ jobs:
           echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_APP_ENV=local" >> "$GITHUB_ENV"
-      - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - name: Stop Supabase
         if: always()
