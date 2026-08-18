@@ -1,6 +1,6 @@
 import pg from "pg";
 import type { ManifestEntity } from "./manifest";
-import { canonicalJson, sha256 } from "./manifest";
+import { sha256 } from "./manifest";
 
 const { Client } = pg;
 type Existing = {
