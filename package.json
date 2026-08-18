@@ -34,6 +34,7 @@
     "@playwright/test": "^1.55.0",
     "@supabase/supabase-js": "^2.55.0",
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.15.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
