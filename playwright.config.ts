@@ -11,8 +11,20 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   projects: [
-    { name: "chromium-desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "chromium-mobile", use: { ...devices["Pixel 7"] } },
+    {
+      name: "chromium-desktop",
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: process.env.CI ? "chrome" : undefined,
+      },
+    },
+    {
+      name: "chromium-mobile",
+      use: {
+        ...devices["Pixel 7"],
+        channel: process.env.CI ? "chrome" : undefined,
+      },
+    },
   ],
   webServer: {
     command: "pnpm dev",
