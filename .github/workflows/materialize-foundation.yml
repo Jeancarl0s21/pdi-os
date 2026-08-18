@@ -1,3 +1,4 @@
+# Transport-only workflow; self-deletes after successful materialization.
 name: Materialize Foundation payload
 
 on:
