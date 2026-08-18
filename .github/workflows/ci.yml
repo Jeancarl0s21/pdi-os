@@ -1,0 +1,80 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main, 'foundation/**', 'chore/**']
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { run_install: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install dependencies
+        run: |
+          if [[ -f pnpm-lock.yaml ]]; then pnpm install --frozen-lockfile; else pnpm install --no-frozen-lockfile; fi
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Build application skeleton
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: foundation-ci-public-key
+          NEXT_PUBLIC_APP_ENV: local
+        run: pnpm build
+      - run: pnpm audit --audit-level high
+
+  database:
+    name: database
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { run_install: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: |
+          if [[ -f pnpm-lock.yaml ]]; then pnpm install --frozen-lockfile; else pnpm install --no-frozen-lockfile; fi
+      - run: pnpm db:start
+      - run: pnpm db:reset
+      - run: pnpm db:lint
+      - run: pnpm test:db
+      - name: Stop Supabase
+        if: always()
+        run: pnpm db:stop --no-backup || true
+
+  e2e:
+    name: e2e-a11y
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { run_install: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: |
+          if [[ -f pnpm-lock.yaml ]]; then pnpm install --frozen-lockfile; else pnpm install --no-frozen-lockfile; fi
+      - run: pnpm db:start
+      - name: Export local public Supabase environment
+        shell: bash
+        run: |
+          pnpm supabase status -o env > /tmp/supabase.env
+          API_URL=$(grep '^API_URL=' /tmp/supabase.env | cut -d= -f2- | tr -d '"')
+          ANON_KEY=$(grep '^ANON_KEY=' /tmp/supabase.env | cut -d= -f2- | tr -d '"')
+          echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_APP_ENV=local" >> "$GITHUB_ENV"
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - name: Stop Supabase
+        if: always()
+        run: pnpm db:stop --no-backup || true
