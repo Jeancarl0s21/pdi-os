@@ -41,11 +41,15 @@ try {
   await client.end();
 }
 
-async function listRecursive(
-  bucket: string,
-  prefix = "",
-): Promise<{ name: string; updated_at?: string; created_at?: string }[]> {
-  const out: any[] = [];
+type StoredObject = {
+  name: string;
+  id?: string | null;
+  updated_at?: string | null;
+  created_at?: string | null;
+};
+
+async function listRecursive(bucket: string, prefix = ""): Promise<StoredObject[]> {
+  const out: StoredObject[] = [];
   let offset = 0;
   while (true) {
     const { data, error } = await supabase.storage
@@ -64,7 +68,26 @@ async function listRecursive(
   return out;
 }
 
-const report: any = { missing: [], orphans: [], eligibleForDelete: [], deleted: [] };
+type MissingEntry = {
+  bucket: string;
+  path: string;
+  severity: "critical";
+  action: "recover-from-backup-first";
+};
+type OrphanEntry = { bucket: string; path: string; ageDays: number };
+type ReconciliationReport = {
+  missing: MissingEntry[];
+  orphans: OrphanEntry[];
+  eligibleForDelete: OrphanEntry[];
+  deleted: OrphanEntry[];
+};
+
+const report: ReconciliationReport = {
+  missing: [],
+  orphans: [],
+  eligibleForDelete: [],
+  deleted: [],
+};
 for (const [bucket, referenced] of refs) {
   const objects = await listRecursive(bucket);
   const names = new Set(objects.map((o) => o.name));
