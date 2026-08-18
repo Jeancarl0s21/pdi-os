@@ -12,5 +12,5 @@ select is((select title from public.tasks),'A','User A sees Task A');
 select is((select count(*)::int from public.tasks where id='70000000-0000-0000-0000-000000000012'),0,'User A cannot read User B Task');
 select throws_ok($$update public.tasks set title='cross' where id='70000000-0000-0000-0000-000000000012'; select public.move_task('70000000-0000-0000-0000-000000000012','done',0)$$,'42501',null,'Owner check blocks cross-user RPC');
 reset role; set local role anon;
-select is((select count(*)::int from public.tasks),0,'Anonymous raw domain read returns no rows');
+select throws_ok($$select count(*) from public.tasks$$,'42501',null,'Anonymous raw domain read is denied');
 select * from finish(); rollback;
