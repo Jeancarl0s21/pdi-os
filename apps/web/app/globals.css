@@ -1,0 +1,101 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+:root {
+  color-scheme: dark;
+
+  /* PDI OS UI Master V1.0 — approved visual baseline */
+  --pdi-bg: #060b14;
+  --pdi-bg-raised: #08111f;
+  --pdi-surface: #0c1728;
+  --pdi-surface-strong: #101e32;
+  --pdi-border: #1c2b42;
+  --pdi-text: #f3f7ff;
+  --pdi-muted: #94a3b8;
+  --pdi-accent: #4ea1ff;
+  --pdi-mint: #7ee7c4;
+  --pdi-success: #43d19e;
+  --pdi-warning: #f2b75b;
+  --pdi-danger: #ff6b6b;
+
+  /* shadcn semantic surface aliases — subordinate to UI Master */
+  --background: var(--pdi-bg);
+  --foreground: var(--pdi-text);
+  --card: var(--pdi-bg-raised);
+  --card-foreground: var(--pdi-text);
+  --popover: var(--pdi-bg-raised);
+  --popover-foreground: var(--pdi-text);
+  --primary: var(--pdi-accent);
+  --primary-foreground: var(--pdi-bg);
+  --secondary: var(--pdi-surface-strong);
+  --secondary-foreground: var(--pdi-text);
+  --muted: var(--pdi-surface);
+  --muted-foreground: var(--pdi-muted);
+  --accent: var(--pdi-surface-strong);
+  --accent-foreground: var(--pdi-text);
+  --destructive: var(--pdi-danger);
+  --destructive-foreground: var(--pdi-bg);
+  --border: var(--pdi-border);
+  --input: var(--pdi-border);
+  --ring: var(--pdi-accent);
+  --radius: 0.625rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.125rem;
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
