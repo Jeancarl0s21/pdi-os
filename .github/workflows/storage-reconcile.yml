@@ -1,0 +1,25 @@
+name: Storage reconciliation
+on:
+  schedule:
+    - cron: '41 5 * * 0'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dry-run:
+    name: storage-reconcile-dry-run
+    runs-on: ubuntu-latest
+    environment: production-operations
+    if: ${{ vars.STORAGE_RECONCILE_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { run_install: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: pnpm install --frozen-lockfile
+      - env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: pnpm storage:reconcile
