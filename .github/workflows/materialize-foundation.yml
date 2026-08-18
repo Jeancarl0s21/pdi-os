@@ -1,4 +1,4 @@
-# Transport-only workflow; self-deletes after successful materialization.
+# Transport-only workflow; removed after successful materialization.
 name: Materialize Foundation payload
 
 on:
@@ -22,11 +22,22 @@ jobs:
           fetch-depth: 0
           ref: foundation/bootstrap
 
+      - name: Detect transport payload
+        id: payload
+        shell: bash
+        run: |
+          if [[ -d .foundation-payload ]]; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+            echo 'Foundation payload already removed; nothing to materialize.'
+          fi
+
       - name: Reconstruct and validate Foundation archive
+        if: steps.payload.outputs.present == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          test -d .foundation-payload
           part_count="$(find .foundation-payload -maxdepth 1 -type f -name 'part-*' | wc -l | tr -d ' ')"
           test "$part_count" -eq 13
           find .foundation-payload -maxdepth 1 -type f -name 'part-*' -print0 \
@@ -39,12 +50,12 @@ jobs:
           test -s /tmp/foundation-files.txt
 
       - name: Materialize real Foundation tree
+        if: steps.payload.outputs.present == 'true'
         shell: bash
         run: |
           set -euo pipefail
           tar -xzf /tmp/foundation.tar.gz -C .
           rm -rf .foundation-payload
-          rm -f .github/workflows/materialize-foundation.yml
 
           test -f apps/web/package.json
           test -f .github/workflows/ci.yml
@@ -55,15 +66,16 @@ jobs:
           test -f tests/e2e/foundation.spec.ts
           test ! -e .foundation-payload
 
-      - name: Commit materialized tree
+      - name: Commit materialized non-workflow tree
+        if: steps.payload.outputs.present == 'true'
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          echo "Materialized changed paths: $(git diff --cached --name-only | wc -l | tr -d ' ')"
-          git diff --cached --name-status | sed -n '1,160p'
+          git add -A -- . ':(exclude).github/workflows/*'
+          echo "Materialized staged paths: $(git diff --cached --name-only | wc -l | tr -d ' ')"
+          git diff --cached --name-status | sed -n '1,180p'
           git diff --cached --quiet && { echo 'No materialization changes found'; exit 1; }
           git commit -m 'chore: materialize Foundation tree'
           git push origin HEAD:foundation/bootstrap
