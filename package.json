@@ -48,5 +48,10 @@
     "vitest": "^3.2.0",
     "zod": "^4.0.0"
   },
-  "packageManager": "pnpm@10.15.0"
+  "packageManager": "pnpm@10.15.0",
+  "pnpm": {
+    "overrides": {
+      "fast-uri": "3.1.7"
+    }
+  }
 }
