@@ -10,7 +10,7 @@ set local role authenticated; set local request.jwt.claim.sub='10000000-0000-000
 select is((select count(*)::int from public.tasks),1,'User A sees only own Task');
 select is((select title from public.tasks),'A','User A sees Task A');
 select is((select count(*)::int from public.tasks where id='70000000-0000-0000-0000-000000000012'),0,'User A cannot read User B Task');
-select throws_ok($$update public.tasks set title='cross' where id='70000000-0000-0000-0000-000000000012'; select public.move_task('70000000-0000-0000-0000-000000000012','done',0)$$,'42501',null,'Owner check blocks cross-user RPC');
+select throws_ok($$update public.tasks set title='cross' where id='70000000-0000-0000-0000-000000000012'; select public.move_task('70000000-0000-0000-0000-000000000012','done',0)$$,'P0002',null,'Owner check blocks cross-user RPC');
 reset role; set local role anon;
 select throws_ok($$select count(*) from public.tasks$$,'42501',null,'Anonymous raw domain read is denied');
 select * from finish(); rollback;
