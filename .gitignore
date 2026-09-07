@@ -47,3 +47,8 @@ restore-work/
 # Python cache
 __pycache__/
 *.pyc
+
+
+
+CLAUDE.md
+docs/context/" >> .gitignore
