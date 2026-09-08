@@ -15,6 +15,11 @@ major_version = 17
 [db.pooler]
 enabled = false
 
+# Local / CI only. Never runs against Non-Prod or Production (migrations-only there).
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
 [studio]
 enabled = true
 port = 54323

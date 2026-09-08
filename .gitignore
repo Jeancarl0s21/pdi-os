@@ -5,11 +5,13 @@ node_modules/
 # Next.js
 .next/
 out/
+*.tsbuildinfo
 
 # test output
 coverage/
 playwright-report/
 test-results/
+tests/e2e/.auth/
 
 # local Supabase runtime
 supabase/.branches/
