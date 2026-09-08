@@ -11,8 +11,9 @@ export const STORAGE_STATE = "tests/e2e/.auth/user.json";
 // Logs in once through the real UI so the Supabase auth cookies are captured, then
 // reuses that session for the authenticated shell specs.
 export default async function globalSetup(config: FullConfig) {
-  const { baseURL } = config.projects[0].use;
-  const browser = await chromium.launch();
+  const { baseURL, channel } = config.projects[0].use;
+  // Match the project channel: CI uses system Chrome (no bundled browser download).
+  const browser = await chromium.launch({ channel });
   const page = await browser.newPage({ baseURL });
 
   await page.goto("/login");
