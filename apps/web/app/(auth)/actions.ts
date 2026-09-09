@@ -53,6 +53,8 @@ export async function updatePassword(formData: FormData) {
 
 export async function signOut() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  // Local scope: end this browser session only. Revoking every session for the
+  // account ("sign out everywhere") is a separate, explicit action.
+  await supabase.auth.signOut({ scope: "local" });
   redirect("/login");
 }

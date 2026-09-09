@@ -4,6 +4,12 @@ import { STORAGE_STATE } from "./global-setup";
 
 test.use({ storageState: STORAGE_STATE });
 
+// These assertions target the persistent desktop sidebar. The mobile drawer has
+// its own spec (mobile-nav.spec.ts).
+test.beforeEach(() => {
+  test.skip(test.info().project.name !== "chromium-desktop", "desktop shell layout");
+});
+
 // Mirrors components/shell/nav-items.ts (UX-DEC-002, PT-BR slugs).
 const NAV = [
   { href: "/app", heading: "Dashboard" },
@@ -36,8 +42,7 @@ test("every navigation destination resolves to its page", async ({ page }) => {
   }
 });
 
-test("desktop navigation marks the active destination", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
+test("navigation marks the active destination", async ({ page }) => {
   await page.goto("/app/roadmap");
   const activeLink = page.getByRole("link", { name: "Roadmap" });
   await expect(activeLink).toHaveAttribute("aria-current", "page");
