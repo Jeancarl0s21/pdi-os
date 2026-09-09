@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
 import { ContentList } from "@/components/roadmap/content-list";
 import { ActivityList } from "@/components/roadmap/activity-list";
@@ -8,6 +8,7 @@ import { MaterialList } from "@/components/roadmap/material-list";
 import { TopicActions } from "@/components/roadmap/topic-actions";
 import { TopicAdmin } from "@/components/roadmap/topic-admin";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { getRoadmapTopic } from "@/lib/roadmap/queries";
 
 export default async function RoadmapTopicPage({
@@ -66,6 +67,14 @@ export default async function RoadmapTopicPage({
       <ContentList contents={topic.contents} />
       <ActivityList activities={topic.activities} />
       <MaterialList materials={topic.materials} />
+
+      <Link
+        href={`/app/estudos?novo=1&topic=${topic.id}`}
+        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
+      >
+        <BookOpen aria-hidden />
+        Registrar estudo deste Topic
+      </Link>
     </>
   );
 }
