@@ -21,7 +21,8 @@ let admin: SupabaseClient;
 let userId: string;
 const ids: Record<string, string> = {};
 
-test.beforeAll(async (_fixtures, testInfo) => {
+// eslint-disable-next-line no-empty-pattern -- Playwright requires the fixtures arg to be a destructuring pattern
+test.beforeAll(async ({}, testInfo) => {
   if (testInfo.project.name !== "chromium-desktop") return;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
