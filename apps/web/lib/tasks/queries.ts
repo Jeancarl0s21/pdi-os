@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Task, TaskCounts } from "./types";
 
 const TASK_COLUMNS =
-  "id,title,description,category,priority,status,due_date,position,created_at,task_tags(tags(name))";
+  "id,title,description,category,priority,status,due_date,position,created_at,archived_at,task_tags(tags(name))";
 
 type RawTask = {
   id: string;
@@ -14,8 +14,9 @@ type RawTask = {
   priority: Task["priority"];
   status: Task["status"];
   due_date: string | null;
-  position: number;
+  position: number | null;
   created_at: string;
+  archived_at: string | null;
   task_tags: { tags: { name: string } | null }[] | null;
 };
 
@@ -30,6 +31,7 @@ function mapTask(row: RawTask): Task {
     dueDate: row.due_date,
     position: row.position,
     createdAt: row.created_at,
+    archivedAt: row.archived_at,
     tags: (row.task_tags ?? [])
       .map((link) => link.tags?.name)
       .filter((name): name is string => Boolean(name))
@@ -44,6 +46,17 @@ export async function listActiveTasks(): Promise<Task[]> {
     .select(TASK_COLUMNS)
     .is("archived_at", null)
     .order("created_at", { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as unknown as RawTask[]).map(mapTask);
+}
+
+export async function listArchivedTasks(): Promise<Task[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("tasks")
+    .select(TASK_COLUMNS)
+    .not("archived_at", "is", null)
+    .order("archived_at", { ascending: false });
   if (error) throw error;
   return ((data ?? []) as unknown as RawTask[]).map(mapTask);
 }

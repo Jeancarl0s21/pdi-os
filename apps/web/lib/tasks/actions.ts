@@ -2,8 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { TASK_STATUSES } from "@pdi-os/domain";
 import { createClient } from "@/lib/supabase/server";
 import { quickTaskSchema, taskFormSchema } from "./schema";
+
+const APPEND_POSITION = 2_147_483_647;
 
 export interface TaskActionResult {
   ok: boolean;
@@ -47,6 +50,8 @@ function rpcArgs(values: z.infer<typeof taskFormSchema>) {
 
 function revalidateTasks() {
   revalidatePath("/app/tarefas");
+  revalidatePath("/app/tarefas/arquivadas");
+  revalidatePath("/app/planejamento");
   revalidatePath("/app");
 }
 
@@ -97,6 +102,61 @@ export async function updateTask(
     ...rpcArgs(parsed.data),
   });
   if (error) return { ok: false, message: "Não foi possível salvar a Task." };
+
+  revalidateTasks();
+  return { ok: true };
+}
+
+const taskIdSchema = z.uuid();
+const moveSchema = z.object({ id: z.uuid(), status: z.enum(TASK_STATUSES) });
+
+export async function moveTask(
+  _prev: TaskActionResult,
+  formData: FormData,
+): Promise<TaskActionResult> {
+  const parsed = moveSchema.safeParse({
+    id: formData.get("id"),
+    status: formData.get("status"),
+  });
+  if (!parsed.success) return { ok: false, message: "Movimento inválido." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("move_task", {
+    p_task_id: parsed.data.id,
+    p_target_status: parsed.data.status,
+    p_target_position: APPEND_POSITION,
+  });
+  if (error) return { ok: false, message: "Não foi possível mover a Task." };
+
+  revalidateTasks();
+  return { ok: true };
+}
+
+export async function archiveTask(
+  _prev: TaskActionResult,
+  formData: FormData,
+): Promise<TaskActionResult> {
+  const id = taskIdSchema.safeParse(formData.get("id"));
+  if (!id.success) return { ok: false, message: "Task inválida." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("archive_task", { p_task_id: id.data });
+  if (error) return { ok: false, message: "Não foi possível arquivar a Task." };
+
+  revalidateTasks();
+  return { ok: true };
+}
+
+export async function restoreTask(
+  _prev: TaskActionResult,
+  formData: FormData,
+): Promise<TaskActionResult> {
+  const id = taskIdSchema.safeParse(formData.get("id"));
+  if (!id.success) return { ok: false, message: "Task inválida." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("restore_task", { p_task_id: id.data });
+  if (error) return { ok: false, message: "Não foi possível restaurar a Task." };
 
   revalidateTasks();
   return { ok: true };
