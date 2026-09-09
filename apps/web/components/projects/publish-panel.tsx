@@ -91,6 +91,11 @@ export function PublishPanel({ project }: { project: Project }) {
           {publishState.message}
         </p>
       ) : null}
+      {publishState.ok && publishState.warning ? (
+        <p role="status" className="text-sm text-[color:var(--pdi-warning)]">
+          {publishState.warning}
+        </p>
+      ) : null}
 
       <Drawer open={confirmOpen} onClose={() => setConfirmOpen(false)} title="Despublicar Project">
         <p className="text-sm text-muted-foreground">

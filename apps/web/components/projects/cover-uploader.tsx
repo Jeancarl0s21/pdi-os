@@ -18,9 +18,11 @@ export function CoverUploader({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const [upload, uploading] = useServerMutation(uploadProjectCover);
-  const [remove, removing] = useServerMutation(removeProjectCover);
+  const [upload, uploading, uploadResult] = useServerMutation(uploadProjectCover);
+  const [remove, removing, removeResult] = useServerMutation(removeProjectCover);
   const busy = uploading || removing;
+  const message = error ?? uploadResult?.message ?? removeResult?.message;
+  const notice = uploadResult?.ok ? uploadResult.warning : undefined;
 
   function onFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -78,9 +80,14 @@ export function CoverUploader({
       </div>
 
       <p className="text-xs text-muted-foreground">PNG, JPG ou WebP, até 5 MB.</p>
-      {error ? (
+      {message ? (
         <p role="alert" className="text-xs text-destructive">
-          {error}
+          {message}
+        </p>
+      ) : null}
+      {notice ? (
+        <p role="status" className="text-xs text-[color:var(--pdi-warning)]">
+          {notice}
         </p>
       ) : null}
     </div>

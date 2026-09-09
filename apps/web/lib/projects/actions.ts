@@ -162,16 +162,18 @@ export async function uploadProjectCover(
     .single();
   if (updateError || !project) return { ok: false, message: "Falha ao salvar a capa." };
 
+  let warning: string | undefined;
   if (project.publication_status === "published") {
     try {
       await mirrorCoverToPublic(supabase, path);
-    } catch {
-      // best effort — the public copy can be re-synced by saving again
+    } catch (mirrorError) {
+      console.warn("[projects] cover mirror failed on cover update", mirrorError);
+      warning = "Capa salva — a versão pública pode levar um momento para atualizar.";
     }
   }
 
   revalidateProjects();
-  return { ok: true };
+  return { ok: true, warning };
 }
 
 export async function removeProjectCover(
@@ -217,16 +219,19 @@ export async function publishProject(
     .select("cover_path")
     .eq("id", id.data)
     .single();
+
+  let warning: string | undefined;
   if (project?.cover_path) {
     try {
       await mirrorCoverToPublic(supabase, project.cover_path);
-    } catch {
-      // best effort
+    } catch (mirrorError) {
+      console.warn("[projects] cover mirror failed on publish", mirrorError);
+      warning = "Publicado — a capa pode levar um momento para aparecer no Portfolio.";
     }
   }
 
   revalidateProjects();
-  return { ok: true };
+  return { ok: true, warning };
 }
 
 export async function unpublishProject(
