@@ -1,13 +1,16 @@
-export default function PrivateFoundationPage() {
+import { LayoutDashboard } from "lucide-react";
+import { PageHeader } from "@/components/shell/page-header";
+import { EmptyState } from "@/components/feedback/empty-state";
+
+export default function DashboardPage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl items-center px-6 py-16">
-      <section className="flex max-w-2xl flex-col gap-4">
-        <p className="font-mono text-sm text-muted-foreground">PRIVATE BOUNDARY / FOUNDATION</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Sessão autenticada validada.</h1>
-        <p className="text-muted-foreground">
-          Nenhuma feature funcional do MVP é implementada neste shell.
-        </p>
-      </section>
-    </main>
+    <>
+      <PageHeader title="Dashboard" description="O que precisa da sua atenção agora." />
+      <EmptyState
+        icon={<LayoutDashboard aria-hidden />}
+        title="Dashboard em construção"
+        description="O resumo de execução, estudo atual, Roadmap e quick actions chegam nos próximos slices."
+      />
+    </>
   );
 }

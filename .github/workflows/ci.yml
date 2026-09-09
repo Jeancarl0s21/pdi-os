@@ -71,10 +71,24 @@ jobs:
           pnpm supabase status -o env > /tmp/supabase.env
           API_URL=$(grep '^API_URL=' /tmp/supabase.env | cut -d= -f2- | tr -d '"')
           ANON_KEY=$(grep '^ANON_KEY=' /tmp/supabase.env | cut -d= -f2- | tr -d '"')
+          SERVICE_ROLE_KEY=$(grep '^SERVICE_ROLE_KEY=' /tmp/supabase.env | cut -d= -f2- | tr -d '"')
           echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_APP_ENV=local" >> "$GITHUB_ENV"
+          # Local Supabase service-role key (well-known local value) — lets the e2e
+          # global-setup provision its test user via the GoTrue admin API.
+          echo "::add-mask::$SERVICE_ROLE_KEY"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
       - run: pnpm test:e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
       - name: Stop Supabase
         if: always()
         run: pnpm db:stop --no-backup || true
