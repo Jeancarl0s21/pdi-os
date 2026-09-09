@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { saveModule, type RoadmapEditResult } from "@/lib/roadmap/edit-actions";
 import { Button } from "@/components/ui/button";
@@ -12,13 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 
 const INITIAL: RoadmapEditResult = { ok: false };
 
+/** Mount only while open — a fresh useActionState per open cycle. */
 export function ModuleEditor({
-  open,
   onClose,
   trackId,
   module,
 }: {
-  open: boolean;
   onClose: () => void;
   trackId: string;
   module?: { id: string; title: string; description: string | null };
@@ -35,7 +33,7 @@ export function ModuleEditor({
 
   return (
     <Drawer
-      open={open}
+      open
       onClose={onClose}
       title={module ? "Editar Module" : "Novo Module"}
       description="A estrutura do Roadmap é uma ação secundária."

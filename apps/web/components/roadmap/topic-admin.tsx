@@ -42,12 +42,9 @@ export function TopicAdmin({
         Arquivar
       </Button>
 
-      <TopicEditor
-        open={editing}
-        onClose={() => setEditing(false)}
-        moduleId={moduleId}
-        topic={topic}
-      />
+      {editing ? (
+        <TopicEditor onClose={() => setEditing(false)} moduleId={moduleId} topic={topic} />
+      ) : null}
 
       <Drawer
         open={confirmArchive}

@@ -100,7 +100,7 @@ export function TopicManager({
         </ul>
       )}
 
-      <TopicEditor open={creating} onClose={() => setCreating(false)} moduleId={moduleId} />
+      {creating ? <TopicEditor onClose={() => setCreating(false)} moduleId={moduleId} /> : null}
     </div>
   );
 }

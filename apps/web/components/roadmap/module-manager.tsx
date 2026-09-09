@@ -111,9 +111,9 @@ export function ModuleManager({
         ))}
       </ul>
 
-      <ModuleEditor open={creating} onClose={() => setCreating(false)} trackId={trackId} />
+      {creating ? <ModuleEditor onClose={() => setCreating(false)} trackId={trackId} /> : null}
       {editing ? (
-        <ModuleEditor open onClose={() => setEditing(null)} trackId={trackId} module={editing} />
+        <ModuleEditor onClose={() => setEditing(null)} trackId={trackId} module={editing} />
       ) : null}
     </div>
   );

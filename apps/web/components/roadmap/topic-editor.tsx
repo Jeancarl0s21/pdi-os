@@ -11,13 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 
 const INITIAL: RoadmapEditResult = { ok: false };
 
+/** Mount only while open — a fresh useActionState per open cycle. */
 export function TopicEditor({
-  open,
   onClose,
   moduleId,
   topic,
 }: {
-  open: boolean;
   onClose: () => void;
   moduleId: string;
   topic?: {
@@ -39,7 +38,7 @@ export function TopicEditor({
   }, [state, router, onClose]);
 
   return (
-    <Drawer open={open} onClose={onClose} title={topic ? "Editar Topic" : "Novo Topic"}>
+    <Drawer open onClose={onClose} title={topic ? "Editar Topic" : "Novo Topic"}>
       <form action={formAction} className="flex flex-col gap-4">
         {topic ? (
           <input type="hidden" name="id" value={topic.id} />
