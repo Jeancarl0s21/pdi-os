@@ -104,6 +104,17 @@ test.beforeAll(async ({}, testInfo) => {
     position: 0,
   });
 
+  // Topic B carries a completed Activity so the progress test can flip it to
+  // `completed` — the enforce_topic_completion trigger requires one (RN-ROADMAP-012).
+  await admin.from("activities").insert({
+    user_id: userId,
+    topic_id: ids.topicB,
+    title: `${ACTIVITY} B`,
+    instruction: "Exercício concluído.",
+    completed_at: new Date().toISOString(),
+    position: 0,
+  });
+
   await admin.from("materials").insert({
     user_id: userId,
     topic_id: ids.topicA,
@@ -159,12 +170,21 @@ test("navigate Track overview → Module → Topic and read the Topic", async ({
 });
 
 test("module progress reflects completed active topics", async ({ page }) => {
-  await admin.from("topics").update({ status: "completed" }).eq("id", ids.topicB);
+  await page.goto(`/app/roadmap/${ids.module}`);
+  await expect(page.getByRole("progressbar")).toHaveAttribute(
+    "aria-label",
+    /0 de 2 topics concluídos/,
+  );
+
+  const update = await admin.from("topics").update({ status: "completed" }).eq("id", ids.topicB);
+  expect(update.error).toBeNull();
+
   await page.goto(`/app/roadmap/${ids.module}`);
   await expect(page.getByRole("progressbar")).toHaveAttribute(
     "aria-label",
     /1 de 2 topics concluídos/,
   );
+
   await admin.from("topics").update({ status: "not_started" }).eq("id", ids.topicB);
 });
 
