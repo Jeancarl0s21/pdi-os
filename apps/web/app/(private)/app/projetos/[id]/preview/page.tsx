@@ -1,9 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
-import { ProjectShowcase } from "@/components/projects/project-showcase";
-import { buttonVariants } from "@/components/ui/button";
+import { PreviewModal } from "@/components/projects/preview-modal";
 import { getProject } from "@/lib/projects/queries";
 
 export default async function ProjectPreviewPage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,18 +12,13 @@ export default async function ProjectPreviewPage({ params }: { params: Promise<{
     <>
       <PageHeader
         title="Preview"
-        description="Como o Project aparece para quem visita o Portfolio."
-        actions={
-          <Link
-            href={`/app/projetos/${project.id}`}
-            className={buttonVariants({ variant: "ghost" })}
-          >
-            <ArrowLeft aria-hidden />
-            Editor
-          </Link>
-        }
+        description="Exatamente o modal que quem visita o Portfolio vê. Feche para voltar ao editor."
       />
-      <ProjectShowcase project={project} coverUrl={project.coverUrl} />
+      <div aria-hidden className="grid gap-5 opacity-40 sm:grid-cols-2">
+        <div className="h-40 rounded-xl border border-border bg-card" />
+        <div className="h-40 rounded-xl border border-border bg-card" />
+      </div>
+      <PreviewModal project={project} coverUrl={project.coverUrl} projectId={project.id} />
     </>
   );
 }
