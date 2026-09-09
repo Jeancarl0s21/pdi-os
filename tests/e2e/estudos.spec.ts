@@ -125,7 +125,9 @@ test("Registrar estudo from a Topic prefills the Topic, then Sem Topic hides it"
   await dialog(page).getByRole("button", { name: "Salvar" }).click();
   await expect(inList).toHaveCount(1);
 
-  await page.getByLabel("Sem Topic").check();
+  // Controlled checkbox backed by a URL param — .check() races the RSC nav.
+  await page.getByLabel("Sem Topic").click();
+  await expect(page).toHaveURL(/noTopic=1/);
   await expect(inList).toHaveCount(0);
 });
 
