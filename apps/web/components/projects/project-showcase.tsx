@@ -1,5 +1,6 @@
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { PROJECT_EXECUTION_STATUS_LABELS } from "@pdi-os/domain";
+import { GithubMark } from "@/components/icons/github-mark";
 import { Badge } from "@/components/ui/badge";
 import type { Project } from "@/lib/projects/types";
 
@@ -60,7 +61,7 @@ export function ProjectShowcase({
               rel="noreferrer noopener"
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
             >
-              <Github aria-hidden className="size-4" />
+              <GithubMark aria-hidden className="size-4" />
               GitHub
             </a>
           ) : null}
