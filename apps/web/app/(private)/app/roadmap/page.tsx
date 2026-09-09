@@ -29,10 +29,7 @@ export default async function RoadmapPage() {
         title={track.title}
         description={track.description ?? "O que preciso aprender e praticar."}
         actions={
-          <Link
-            href="/app/roadmap/arquivados"
-            className={buttonVariants({ variant: "ghost" })}
-          >
+          <Link href="/app/roadmap/arquivados" className={buttonVariants({ variant: "ghost" })}>
             <Archive aria-hidden />
             Arquivados
           </Link>
