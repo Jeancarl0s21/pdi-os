@@ -330,3 +330,87 @@ export interface PublicPortfolio {
   stack: PublicPortfolioStackItem[];
   projects: PublicPortfolioProject[];
 }
+
+// ---------------------------------------------------------------------------
+// Roadmap — Track → Module → Topic navigation + derived progress.
+// Progress is never persisted (RN-ROADMAP-007, RN-INTEGRITY-003): it is a pure
+// function of the active (non-archived) topics.
+// ---------------------------------------------------------------------------
+
+export const TOPIC_STATUS_LABELS: Record<TopicStatus, string> = {
+  not_started: "Não iniciado",
+  studying: "Estudando",
+  completed: "Concluído",
+};
+
+export interface RoadmapProgress {
+  completed: number;
+  total: number;
+  /** 0–100, rounded. 0 when there are no active topics. */
+  pct: number;
+}
+
+/** Module/Track completion = completed active topics / active topics (RN-ROADMAP-006/008). */
+export function roadmapProgress(
+  topics: { status: TopicStatus; archivedAt: string | null }[],
+): RoadmapProgress {
+  const active = topics.filter((topic) => topic.archivedAt === null);
+  const completed = active.filter((topic) => topic.status === "completed").length;
+  const total = active.length;
+  return { completed, total, pct: total === 0 ? 0 : Math.round((completed / total) * 100) };
+}
+
+/**
+ * The editorial body of a Content (AMD-001). Stored as a loose `jsonb` object;
+ * every field is optional and rendered only when present.
+ */
+export interface ContentDidacticExample {
+  type: string | null;
+  context: string | null;
+  content: string | null;
+  resultExplanation: string | null;
+}
+
+export interface ContentDidacticBody {
+  explanation: string | null;
+  keyPoints: string[];
+  example: ContentDidacticExample | null;
+  whenToUse: string | null;
+  pitfalls: string | null;
+}
+
+function asString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() !== "" ? value : null;
+}
+
+/** Parse a raw `didactic_payload` object defensively into the editorial shape. */
+export function parseContentDidacticBody(payload: unknown): ContentDidacticBody {
+  const raw = (payload ?? {}) as Record<string, unknown>;
+  const exampleRaw = raw.example as Record<string, unknown> | undefined;
+  const keyPoints = Array.isArray(raw.key_points)
+    ? raw.key_points.filter(
+        (point): point is string => typeof point === "string" && point.trim() !== "",
+      )
+    : [];
+
+  const example: ContentDidacticExample | null = exampleRaw
+    ? {
+        type: asString(exampleRaw.type),
+        context: asString(exampleRaw.context),
+        content: asString(exampleRaw.content),
+        resultExplanation: asString(exampleRaw.result_explanation),
+      }
+    : null;
+
+  const hasExample =
+    example !== null &&
+    (example.context || example.content || example.resultExplanation || example.type);
+
+  return {
+    explanation: asString(raw.explanation),
+    keyPoints,
+    example: hasExample ? example : null,
+    whenToUse: asString(raw.when_to_use),
+    pitfalls: asString(raw.pitfalls),
+  };
+}
