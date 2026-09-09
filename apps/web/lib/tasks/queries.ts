@@ -50,15 +50,22 @@ export async function listActiveTasks(): Promise<Task[]> {
   return ((data ?? []) as unknown as RawTask[]).map(mapTask);
 }
 
-export async function listArchivedTasks(): Promise<Task[]> {
+export const ARCHIVED_PAGE_SIZE = 30;
+
+/** Paginated: `take` rows plus a `hasMore` flag (RNF-PERF-004). */
+export async function listArchivedTasks(
+  take: number = ARCHIVED_PAGE_SIZE,
+): Promise<{ tasks: Task[]; hasMore: boolean }> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("tasks")
     .select(TASK_COLUMNS)
     .not("archived_at", "is", null)
-    .order("archived_at", { ascending: false });
+    .order("archived_at", { ascending: false })
+    .range(0, take); // one extra row tells us whether there's a next page
   if (error) throw error;
-  return ((data ?? []) as unknown as RawTask[]).map(mapTask);
+  const rows = (data ?? []) as unknown as RawTask[];
+  return { tasks: rows.slice(0, take).map(mapTask), hasMore: rows.length > take };
 }
 
 export async function getTaskCounts(): Promise<TaskCounts> {

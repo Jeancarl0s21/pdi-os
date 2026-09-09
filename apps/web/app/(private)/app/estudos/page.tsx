@@ -1,9 +1,16 @@
+import Link from "next/link";
 import { toISODate } from "@pdi-os/domain";
 import { PageHeader } from "@/components/shell/page-header";
 import { StudyView } from "@/components/study/study-view";
-import { listModuleRefs, listStudySessions, listTopicRefs } from "@/lib/study/queries";
+import {
+  STUDY_PAGE_SIZE,
+  listModuleRefs,
+  listStudySessions,
+  listTopicRefs,
+} from "@/lib/study/queries";
 import { listProjects } from "@/lib/projects/queries";
 import { listEvidenceByContext } from "@/lib/evidence/queries";
+import { buttonVariants } from "@/components/ui/button";
 import type { StudySessionFilters } from "@/lib/study/types";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -32,8 +39,10 @@ export default async function EstudosPage({
   else if (moduleId && UUID_RE.test(moduleId)) filters.moduleId = moduleId;
   if (project && UUID_RE.test(project)) filters.projectId = project;
 
-  const [sessions, topics, modules, projects] = await Promise.all([
-    listStudySessions(filters),
+  const take = Math.min(Math.max(Number(str(sp.take)) || STUDY_PAGE_SIZE, STUDY_PAGE_SIZE), 300);
+
+  const [{ sessions, hasMore }, topics, modules, projects] = await Promise.all([
+    listStudySessions(filters, take),
     listTopicRefs(),
     listModuleRefs(),
     listProjects(),
@@ -46,6 +55,13 @@ export default async function EstudosPage({
     sessions.map((s) => s.id),
   );
   const evidenceBySession = Object.fromEntries(evidenceMap);
+
+  const moreParams = new URLSearchParams();
+  for (const key of ["from", "to", "topic", "module", "project", "noTopic"]) {
+    const v = str(sp[key]);
+    if (v) moreParams.set(key, v);
+  }
+  moreParams.set("take", String(take + STUDY_PAGE_SIZE));
 
   return (
     <>
@@ -60,6 +76,14 @@ export default async function EstudosPage({
         openNew={str(sp.novo) === "1"}
         prefillTopicId={prefillTopicId}
       />
+      {hasMore ? (
+        <Link
+          href={`/app/estudos?${moreParams.toString()}`}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          Carregar mais
+        </Link>
+      ) : null}
     </>
   );
 }

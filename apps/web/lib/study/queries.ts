@@ -36,10 +36,16 @@ function mapRow(row: RawRow): StudySession {
   };
 }
 
-/** Chronological log, most recent first (DEC-040). Filters are RN-STUDY-007. */
+export const STUDY_PAGE_SIZE = 30;
+
+/**
+ * Chronological log, most recent first (DEC-040). Filters are RN-STUDY-007.
+ * Paginated: `take` rows plus a `hasMore` flag (RNF-PERF-004).
+ */
 export async function listStudySessions(
   filters: StudySessionFilters = {},
-): Promise<StudySession[]> {
+  take: number = STUDY_PAGE_SIZE,
+): Promise<{ sessions: StudySession[]; hasMore: boolean }> {
   const supabase = await createClient();
 
   // moduleId narrows to the topics that belong to that module.
@@ -47,14 +53,15 @@ export async function listStudySessions(
   if (filters.moduleId) {
     const { data } = await supabase.from("topics").select("id").eq("module_id", filters.moduleId);
     moduleTopicIds = (data ?? []).map((t) => t.id);
-    if (moduleTopicIds.length === 0) return [];
+    if (moduleTopicIds.length === 0) return { sessions: [], hasMore: false };
   }
 
   let query = supabase
     .from("study_sessions")
     .select(COLUMNS)
     .order("studied_on", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(0, take);
 
   if (filters.from) query = query.gte("studied_on", filters.from);
   if (filters.to) query = query.lte("studied_on", filters.to);
@@ -65,7 +72,8 @@ export async function listStudySessions(
 
   const { data, error } = await query;
   if (error) throw error;
-  return ((data ?? []) as unknown as RawRow[]).map(mapRow);
+  const rows = (data ?? []) as unknown as RawRow[];
+  return { sessions: rows.slice(0, take).map(mapRow), hasMore: rows.length > take };
 }
 
 export async function listTopicRefs(): Promise<{ id: string; title: string }[]> {

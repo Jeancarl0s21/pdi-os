@@ -60,48 +60,81 @@ export interface Dashboard {
 
 const PRIORITY_WEIGHT: Record<TaskPriority, number> = { high: 0, medium: 1, low: 2 };
 
+const HEAD = { count: "exact" as const, head: true };
+
 export async function getDashboard(): Promise<Dashboard> {
   const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
 
   const [
-    { data: tasks, error: tasksError },
+    pendingCount,
+    overdueCount,
+    doneCount,
+    { data: pending, error: pendingError },
+    { data: doneRecent, error: doneError },
     { data: topics, error: topicsError },
     { data: study, error: studyError },
     { data: projects, error: projectsError },
   ] = await Promise.all([
+    supabase.from("tasks").select("id", HEAD).is("archived_at", null).neq("status", "done"),
     supabase
       .from("tasks")
-      .select("id,title,status,due_date,priority,updated_at")
-      .is("archived_at", null),
+      .select("id", HEAD)
+      .is("archived_at", null)
+      .neq("status", "done")
+      .lt("due_date", today),
+    supabase.from("tasks").select("id", HEAD).is("archived_at", null).eq("status", "done"),
+    supabase
+      .from("tasks")
+      .select("id,title,status,due_date,priority")
+      .is("archived_at", null)
+      .neq("status", "done")
+      .order("due_date", { ascending: true, nullsFirst: false })
+      .limit(5),
+    supabase
+      .from("tasks")
+      .select("id,title,updated_at")
+      .is("archived_at", null)
+      .eq("status", "done")
+      .order("updated_at", { ascending: false })
+      .limit(6),
     supabase
       .from("topics")
-      .select("id,module_id,title,status,archived_at,updated_at,modules(title)")
-      .is("archived_at", null),
+      .select("id,module_id,title,status,updated_at,modules(title)")
+      .is("archived_at", null)
+      .in("status", ["studying", "completed", "not_started"]),
     supabase
       .from("study_sessions")
       .select("id,studied_on,title,created_at")
       .order("studied_on", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(20),
+      .limit(6),
     supabase
       .from("projects")
       .select("id,name,execution_status,updated_at")
       .neq("execution_status", "archived")
       .order("updated_at", { ascending: false })
-      .limit(20),
+      .limit(6),
   ]);
-  if (tasksError) throw tasksError;
-  if (topicsError) throw topicsError;
-  if (studyError) throw studyError;
-  if (projectsError) throw projectsError;
+  for (const e of [
+    pendingCount.error,
+    overdueCount.error,
+    doneCount.error,
+    pendingError,
+    doneError,
+    topicsError,
+    studyError,
+    projectsError,
+  ]) {
+    if (e) throw e;
+  }
 
-  type TaskRow = {
+  type PendingRow = {
     id: string;
     title: string;
     status: "backlog" | "in_progress" | "done";
     due_date: string | null;
     priority: TaskPriority;
-    updated_at: string;
   };
   type TopicRow = {
     id: string;
@@ -112,17 +145,15 @@ export async function getDashboard(): Promise<Dashboard> {
     modules: { title?: string } | { title?: string }[] | null;
   };
 
-  const taskRows = (tasks ?? []) as TaskRow[];
   const topicRows = (topics ?? []) as TopicRow[];
 
   const counts: DashboardTaskCounts = {
-    pending: taskRows.filter((t) => t.status !== "done").length,
-    overdue: taskRows.filter((t) => isTaskOverdue(t.due_date, t.status)).length,
-    done: taskRows.filter((t) => t.status === "done").length,
+    pending: pendingCount.count ?? 0,
+    overdue: overdueCount.count ?? 0,
+    done: doneCount.count ?? 0,
   };
 
-  const pendingTasks: DashboardTask[] = taskRows
-    .filter((t) => t.status !== "done")
+  const pendingTasks: DashboardTask[] = ((pending ?? []) as PendingRow[])
     .map((t) => ({
       id: t.id,
       title: t.title,
@@ -135,8 +166,7 @@ export async function getDashboard(): Promise<Dashboard> {
       const bd = b.dueDate ?? "9999-12-31";
       if (ad !== bd) return ad < bd ? -1 : 1;
       return PRIORITY_WEIGHT[a.priority] - PRIORITY_WEIGHT[b.priority];
-    })
-    .slice(0, 5);
+    });
 
   const relTitle = (m: TopicRow["modules"]) =>
     (Array.isArray(m) ? m[0]?.title : m?.title) ?? "Módulo";
@@ -167,13 +197,11 @@ export async function getDashboard(): Promise<Dashboard> {
   }));
 
   const recentActivity: DashboardActivityItem[] = [
-    ...taskRows
-      .filter((t) => t.status === "done")
-      .map((t) => ({
-        kind: "task" as const,
-        at: t.updated_at,
-        label: `Task concluída · ${t.title}`,
-      })),
+    ...((doneRecent ?? []) as { title: string; updated_at: string }[]).map((t) => ({
+      kind: "task" as const,
+      at: t.updated_at,
+      label: `Task concluída · ${t.title}`,
+    })),
     ...(study ?? []).map((s) => ({
       kind: "study" as const,
       at: s.created_at,

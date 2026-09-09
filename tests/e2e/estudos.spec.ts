@@ -154,3 +154,22 @@ test("attach a link Evidence to a StudySession from the edit drawer", async ({ p
   await d.getByRole("button", { name: "Adicionar", exact: true }).click();
   await expect(d.getByRole("link", { name: url, exact: true })).toBeVisible();
 });
+
+test("the study log paginates with Carregar mais", async ({ page }) => {
+  const tag = `Pag-${stamp}`;
+  const rows = Array.from({ length: 31 }, (_, i) => ({
+    user_id: userId,
+    studied_on: "2026-02-01",
+    title: `${tag}-${String(i).padStart(2, "0")}`,
+  }));
+  const inserted = await admin.from("study_sessions").insert(rows);
+  expect(inserted.error).toBeNull();
+
+  await page.goto("/app/estudos?from=2026-01-15&to=2026-02-15");
+  const items = page.getByRole("listitem").filter({ hasText: tag });
+  await expect(items).toHaveCount(30);
+
+  await page.getByRole("link", { name: "Carregar mais" }).click();
+  await expect(items).toHaveCount(31);
+  await expect(page.getByRole("link", { name: "Carregar mais" })).toBeHidden();
+});
