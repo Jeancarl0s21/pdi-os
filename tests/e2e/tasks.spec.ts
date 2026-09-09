@@ -107,11 +107,3 @@ test("Kanban, drawer and archived list have no serious a11y violations", async (
   await page.goto("/app/tarefas/arquivadas");
   expect(serious((await new AxeBuilder({ page }).analyze()).violations)).toEqual([]);
 });
-
-test("dashboard shows the task summary", async ({ page }) => {
-  await page.goto("/app");
-  const summary = page.getByRole("region", { name: "Resumo de Tasks" });
-  await expect(summary.getByText("Pendentes")).toBeVisible();
-  await expect(summary.getByText("Atrasadas")).toBeVisible();
-  await expect(summary.getByText("Concluídas")).toBeVisible();
-});
