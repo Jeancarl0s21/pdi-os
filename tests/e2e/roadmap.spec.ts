@@ -16,6 +16,10 @@ const TOPIC_B = `Topic B ${stamp}`;
 const CONTENT = `Content E2E ${stamp}`;
 const ACTIVITY = `Activity E2E ${stamp}`;
 const MATERIAL = `Material E2E ${stamp}`;
+const MODULE2 = `Module Flow ${stamp}`;
+const TOPIC_C = `Topic Flow ${stamp}`;
+const CONTENT_C = `Content Flow ${stamp}`;
+const ACTIVITY_C = `Activity Flow ${stamp}`;
 
 let admin: SupabaseClient;
 let userId: string;
@@ -124,13 +128,57 @@ test.beforeAll(async ({}, testInfo) => {
     url: "https://example.com/doc",
     position: 0,
   });
+
+  // A separate module + topic for the progress-flow test (start → complete).
+  const mod2 = await admin
+    .from("modules")
+    .insert({
+      user_id: userId,
+      track_id: ids.track,
+      slug: `module-flow-${stamp}`,
+      title: MODULE2,
+      position: 1,
+    })
+    .select("id")
+    .single();
+  ids.module2 = mod2.data!.id;
+
+  const topicC = await admin
+    .from("topics")
+    .insert({
+      user_id: userId,
+      module_id: ids.module2,
+      slug: `topic-flow-${stamp}`,
+      title: TOPIC_C,
+      status: "not_started",
+      position: 0,
+    })
+    .select("id")
+    .single();
+  ids.topicC = topicC.data!.id;
+
+  await admin.from("contents").insert({
+    user_id: userId,
+    topic_id: ids.topicC,
+    title: CONTENT_C,
+    didactic_payload: { explanation: "y" },
+    position: 0,
+  });
+  await admin.from("activities").insert({
+    user_id: userId,
+    topic_id: ids.topicC,
+    title: ACTIVITY_C,
+    instruction: "Pratique.",
+    position: 0,
+  });
 });
 
 test.afterAll(async () => {
   if (!admin || !ids.track) return;
   // FKs cascade from topics; tracks/modules use ON DELETE RESTRICT, so go bottom-up.
   await admin.from("topics").delete().eq("module_id", ids.module);
-  await admin.from("modules").delete().eq("id", ids.module);
+  await admin.from("topics").delete().eq("module_id", ids.module2);
+  await admin.from("modules").delete().eq("track_id", ids.track);
   await admin.from("tracks").delete().eq("id", ids.track);
 });
 
@@ -186,6 +234,34 @@ test("module progress reflects completed active topics", async ({ page }) => {
   );
 
   await admin.from("topics").update({ status: "not_started" }).eq("id", ids.topicB);
+});
+
+test("drive a Topic from not_started to completed and reopen it", async ({ page }) => {
+  const topicUrl = `/app/roadmap/${ids.module2}/${ids.topicC}`;
+  await page.goto(topicUrl);
+
+  await expect(page.getByText("Não iniciado")).toBeVisible();
+  await page.getByRole("button", { name: "Iniciar Topic" }).click();
+  await expect(page.getByText("Estudando")).toBeVisible();
+
+  // Content completion is independent of expansion and never completes the Topic.
+  const contentCheckbox = page.getByRole("checkbox", { name: new RegExp(CONTENT_C) });
+  await expect(contentCheckbox).toHaveAttribute("aria-checked", "false");
+  await contentCheckbox.click();
+  await expect(contentCheckbox).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByText("Estudando")).toBeVisible();
+
+  // "Concluir Topic" is gated until an Activity is complete (RN-ROADMAP-012).
+  await expect(page.getByRole("button", { name: "Concluir Topic" })).toBeDisabled();
+  await page.getByRole("button", { name: "Concluir", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Reabrir" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Concluir Topic" }).click();
+  await expect(page.getByText("Concluído")).toBeVisible();
+
+  // Reopening the Activity drops the Topic back to studying (Foundation trigger).
+  await page.getByRole("button", { name: "Reabrir" }).click();
+  await expect(page.getByText("Estudando")).toBeVisible();
 });
 
 test("the roadmap screens have no serious a11y violations", async ({ page }) => {

@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { ContentList } from "@/components/roadmap/content-list";
 import { ActivityList } from "@/components/roadmap/activity-list";
 import { MaterialList } from "@/components/roadmap/material-list";
-import { TopicStatusBadge } from "@/components/roadmap/status-badge";
+import { TopicActions } from "@/components/roadmap/topic-actions";
 import { buttonVariants } from "@/components/ui/button";
 import { getRoadmapTopic } from "@/lib/roadmap/queries";
 
@@ -34,9 +34,11 @@ export default async function RoadmapTopicPage({
         }
       />
 
-      <div className="flex items-center gap-3">
-        <TopicStatusBadge status={topic.status} />
-      </div>
+      <TopicActions
+        topicId={topic.id}
+        status={topic.status}
+        hasCompletedActivity={topic.activities.some((activity) => activity.completedAt !== null)}
+      />
 
       {topic.description ? (
         <p className="whitespace-pre-wrap text-sm text-foreground/90">{topic.description}</p>

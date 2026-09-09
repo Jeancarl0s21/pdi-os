@@ -3,6 +3,8 @@
 import { useId, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import type { ContentDidacticBody } from "@pdi-os/domain";
+import { setContentCompleted } from "@/lib/roadmap/actions";
+import { useServerMutation } from "@/lib/hooks/use-server-mutation";
 import type { RoadmapContent } from "@/lib/roadmap/types";
 import { cn } from "@/lib/utils";
 
@@ -56,38 +58,48 @@ function ContentItem({ content }: { content: RoadmapContent }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const done = content.completedAt !== null;
+  const [toggle, toggling] = useServerMutation(setContentCompleted);
 
+  // Completing and expanding are independent (AMD-001 §4): two separate controls.
   return (
     <li className="overflow-hidden rounded-lg border border-border bg-card">
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center gap-3 px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-      >
-        <span
-          aria-hidden
+      <div className="flex items-center gap-3 px-4 py-3">
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={done}
+          aria-label={`Marcar "${content.title}" como concluído`}
+          disabled={toggling}
+          onClick={() => toggle({ id: content.id, completed: done ? "false" : "true" })}
           className={cn(
-            "flex size-4 shrink-0 items-center justify-center rounded border",
+            "flex size-4 shrink-0 items-center justify-center rounded border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
             done
               ? "border-[color:var(--pdi-success)] bg-[color:var(--pdi-success)]/20"
               : "border-border",
           )}
         >
-          {done ? <Check className="size-3 text-[color:var(--pdi-success)]" /> : null}
-        </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-          {content.title}
-        </span>
-        <ChevronDown
-          aria-hidden
-          className={cn(
-            "size-4 shrink-0 text-muted-foreground transition-transform",
-            open && "rotate-180",
-          )}
-        />
-      </button>
+          {done ? <Check aria-hidden className="size-3 text-[color:var(--pdi-success)]" /> : null}
+        </button>
+
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={() => setOpen((value) => !value)}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+            {content.title}
+          </span>
+          <ChevronDown
+            aria-hidden
+            className={cn(
+              "size-4 shrink-0 text-muted-foreground transition-transform",
+              open && "rotate-180",
+            )}
+          />
+        </button>
+      </div>
       <div id={panelId} hidden={!open}>
         <DidacticBody body={content.body} />
       </div>
