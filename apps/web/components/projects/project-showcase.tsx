@@ -1,19 +1,29 @@
 import { ExternalLink } from "lucide-react";
-import { PROJECT_EXECUTION_STATUS_LABELS } from "@pdi-os/domain";
+import { PROJECT_EXECUTION_STATUS_LABELS, type ProjectExecutionStatus } from "@pdi-os/domain";
 import { GithubMark } from "@/components/icons/github-mark";
 import { Badge } from "@/components/ui/badge";
-import type { Project } from "@/lib/projects/types";
+
+/** The subset a Project needs to be rendered publicly — a private `Project` or the public DTO both satisfy it. */
+export interface ShowcaseProject {
+  name: string;
+  executionStatus: ProjectExecutionStatus;
+  shortDescription: string | null;
+  fullDescription: string | null;
+  technologies: string[];
+  githubUrl: string | null;
+  demoUrl: string | null;
+}
 
 /**
  * The visitor-facing rendering of a Project. Used by the private Preview page and
- * (PR-3) inside the public Portfolio's Project modal — so Preview reflects the
- * real thing by construction.
+ * inside the public Portfolio's Project modal — so Preview reflects the real
+ * thing by construction.
  */
 export function ProjectShowcase({
   project,
   coverUrl,
 }: {
-  project: Project;
+  project: ShowcaseProject;
   coverUrl: string | null;
 }) {
   return (

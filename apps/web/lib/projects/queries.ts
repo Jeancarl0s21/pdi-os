@@ -61,6 +61,18 @@ export async function listProjects(
   return ((data ?? []) as unknown as RawProject[]).map(mapProject);
 }
 
+/** Published projects, id + name only — for the "building" selector in Perfil. */
+export async function listPublishedProjectRefs(): Promise<{ id: string; name: string }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("id,name")
+    .eq("publication_status", "published")
+    .order("name", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as { id: string; name: string }[];
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function getProject(id: string): Promise<Project | null> {
