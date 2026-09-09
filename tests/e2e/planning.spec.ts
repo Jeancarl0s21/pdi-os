@@ -59,12 +59,12 @@ test("Período personalizado asks for a range, then filters by it", async ({ pag
   await page.getByRole("button", { name: "Período personalizado" }).click();
   await expect(page.getByText("Defina o período")).toBeVisible();
 
-  await page.getByLabel("De").fill("2000-01-01");
-  await page.getByLabel("Até").fill("2000-01-31");
+  await page.getByLabel("De", { exact: true }).fill("2000-01-01");
+  await page.getByLabel("Até", { exact: true }).fill("2000-01-31");
   await expect(page.getByRole("button", { name: new RegExp(title) })).toBeHidden();
 
-  await page.getByLabel("De").fill(todayISO);
-  await page.getByLabel("Até").fill(todayISO);
+  await page.getByLabel("De", { exact: true }).fill(todayISO);
+  await page.getByLabel("Até", { exact: true }).fill(todayISO);
   await expect(page.getByRole("button", { name: new RegExp(title) })).toBeVisible();
 });
 
