@@ -1,16 +1,14 @@
-import { CalendarRange } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
-import { EmptyState } from "@/components/feedback/empty-state";
+import { PlanningView } from "@/components/tasks/planning-view";
+import { listActiveTasks, listTags } from "@/lib/tasks/queries";
 
-export default function PlanejamentoPage() {
+export default async function PlanejamentoPage() {
+  const [tasks, tags] = await Promise.all([listActiveTasks(), listTags()]);
+
   return (
     <>
       <PageHeader title="Planejamento" description="Em que devo focar neste período." />
-      <EmptyState
-        icon={<CalendarRange aria-hidden />}
-        title="Planejamento em construção"
-        description="A visão temporal das Tasks (semana, mês, próximos 7 dias, atrasadas, sem prazo) chega no Slice 1."
-      />
+      <PlanningView tasks={tasks} tagSuggestions={tags} />
     </>
   );
 }
