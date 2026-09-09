@@ -25,15 +25,28 @@ async function publishProject(page: Page) {
   await page.getByRole("button", { name: "Salvar" }).click();
   await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/cover.png");
   await expect(page.getByRole("img", { name: "Capa do Project" })).toBeVisible();
-  await page.getByRole("button", { name: "Publicar" }).click();
+  const publish = page.getByRole("button", { name: "Publicar" });
+  await expect(publish).toBeEnabled();
+  await publish.click();
   await expect(page.getByText("Publicado")).toBeVisible();
 }
 
-test.describe("public Portfolio", () => {
-  const published = `Public Proj ${Date.now()}`;
-  const draft = `Draft Proj ${Date.now()}`;
+// Setup writes shared portfolio rows; keep it to a single project run.
+const DESKTOP_ONLY = (info = test.info()) => info.project.name === "chromium-desktop";
 
-  test.beforeAll(async ({ browser }) => {
+test.describe("public Portfolio", () => {
+  const stamp = Date.now();
+  const published = `Public Proj ${stamp}`;
+  const draft = `Draft Proj ${stamp}`;
+
+  test.beforeEach(() => {
+    test.skip(!DESKTOP_ONLY(), "runs once");
+  });
+
+  test.beforeAll(async ({ browser }, testInfo) => {
+    if (!DESKTOP_ONLY(testInfo)) return;
+    testInfo.setTimeout(90_000); // creates a project, uploads a cover, publishes
+
     const context = await browser.newContext({ storageState: STORAGE_STATE });
     const page = await context.newPage();
 
@@ -57,7 +70,7 @@ test.describe("public Portfolio", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Jean Carlos", level: 1 })).toBeVisible();
 
-    const card = page.getByRole("button", { name: new RegExp(published) });
+    const card = page.getByRole("button", { name: new RegExp(published) }).first();
     await expect(card).toBeVisible();
     await expect(page.getByText(draft)).toHaveCount(0);
 
@@ -78,7 +91,10 @@ test.describe("public Portfolio", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(serious((await new AxeBuilder({ page }).analyze()).violations)).toEqual([]);
 
-    await page.getByRole("button", { name: new RegExp(published) }).click();
+    await page
+      .getByRole("button", { name: new RegExp(published) })
+      .first()
+      .click();
     await expect(page.getByRole("dialog")).toBeVisible();
     expect(serious((await new AxeBuilder({ page }).analyze()).violations)).toEqual([]);
 

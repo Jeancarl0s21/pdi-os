@@ -25,12 +25,12 @@ test("editing the profile is reflected on the public landing", async ({ page }) 
   await page.getByRole("button", { name: "Adicionar link" }).click();
   await page.getByLabel("Rótulo").fill(linkLabel);
   await page.getByLabel("URL").fill("https://github.com/jeancarl0s21");
-  await page.getByRole("button", { name: "Salvar" }).click();
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
   await expect(page.getByText(linkLabel)).toBeVisible();
 
   await page.getByRole("button", { name: "Adicionar item" }).click();
-  await page.getByLabel("Nome").fill(stackName);
-  await page.getByRole("button", { name: "Salvar" }).click();
+  await page.getByLabel("Nome", { exact: true }).fill(stackName);
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
   await expect(page.getByText(stackName)).toBeVisible();
 
   await page.goto("/");
