@@ -37,6 +37,11 @@ test.beforeAll(async ({}, testInfo) => {
   const list = await admin.auth.admin.listUsers();
   userId = list.data.users.find((u) => u.email === E2E_USER.email)!.id;
 
+  // A profile so the public landing renders past the "em construção" state.
+  await admin
+    .from("portfolio_profiles")
+    .upsert({ user_id: userId, name: "Jean Carlos" }, { onConflict: "user_id" });
+
   const track = await admin
     .from("tracks")
     .insert({ user_id: userId, slug: `track-e2e-${stamp}`, title: TRACK, source_order: 999 })
@@ -201,7 +206,7 @@ test("navigate Track overview → Module → Topic and read the Topic", async ({
 
   await page.getByRole("link", { name: new RegExp(TOPIC_A) }).click();
   await expect(page.getByRole("heading", { name: TOPIC_A })).toBeVisible();
-  await expect(page.getByText("Estudando")).toBeVisible();
+  await expect(page.getByText("Estudando", { exact: true })).toBeVisible();
 
   // Content is collapsed until opened; expanding does not change status.
   const contentToggle = page.getByRole("button", { name: new RegExp(CONTENT) });
@@ -281,16 +286,16 @@ test("drive a Topic from not_started to completed and reopen it", async ({ page 
   const topicUrl = `/app/roadmap/${ids.module2}/${ids.topicC}`;
   await page.goto(topicUrl);
 
-  await expect(page.getByText("Não iniciado")).toBeVisible();
+  await expect(page.getByText("Não iniciado", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Iniciar Topic" }).click();
-  await expect(page.getByText("Estudando")).toBeVisible();
+  await expect(page.getByText("Estudando", { exact: true })).toBeVisible();
 
   // Content completion is independent of expansion and never completes the Topic.
   const contentCheckbox = page.getByRole("checkbox", { name: new RegExp(CONTENT_C) });
   await expect(contentCheckbox).toHaveAttribute("aria-checked", "false");
   await contentCheckbox.click();
   await expect(contentCheckbox).toHaveAttribute("aria-checked", "true");
-  await expect(page.getByText("Estudando")).toBeVisible();
+  await expect(page.getByText("Estudando", { exact: true })).toBeVisible();
 
   // "Concluir Topic" is gated until an Activity is complete (RN-ROADMAP-012).
   await expect(page.getByRole("button", { name: "Concluir Topic" })).toBeDisabled();
@@ -298,11 +303,11 @@ test("drive a Topic from not_started to completed and reopen it", async ({ page 
   await expect(page.getByRole("button", { name: "Reabrir" })).toBeVisible();
 
   await page.getByRole("button", { name: "Concluir Topic" }).click();
-  await expect(page.getByText("Concluído")).toBeVisible();
+  await expect(page.getByText("Concluído", { exact: true })).toBeVisible();
 
   // Reopening the Activity drops the Topic back to studying (Foundation trigger).
   await page.getByRole("button", { name: "Reabrir" }).click();
-  await expect(page.getByText("Estudando")).toBeVisible();
+  await expect(page.getByText("Estudando", { exact: true })).toBeVisible();
 });
 
 test("the roadmap screens have no serious a11y violations", async ({ page }) => {
@@ -315,4 +320,39 @@ test("the roadmap screens have no serious a11y violations", async ({ page }) => 
   await page.goto(`/app/roadmap/${ids.module}/${ids.topicA}`);
   await page.getByRole("button", { name: new RegExp(CONTENT) }).click();
   expect(serious((await new AxeBuilder({ page }).analyze()).violations)).toEqual([]);
+});
+
+test("authorizing a studying Topic surfaces it in the public 'Atualmente estudando'", async ({
+  page,
+  browser,
+}) => {
+  const label = "Exibir no Portfolio enquanto estou estudando";
+
+  async function anonLanding() {
+    const context = await browser.newContext();
+    const anon = await context.newPage();
+    await anon.goto("/");
+    return { context, anon };
+  }
+
+  // Topic A is `studying` from the seed. Controlled checkbox → click, don't .check().
+  await page.goto(`/app/roadmap/${ids.module}/${ids.topicA}`);
+  await page.getByLabel(label).click();
+  await expect(page.getByLabel(label)).toBeChecked();
+
+  {
+    const { context, anon } = await anonLanding();
+    await expect(anon.getByRole("heading", { name: "Atualmente estudando" })).toBeVisible();
+    await expect(anon.getByText(TOPIC_A, { exact: true })).toBeVisible();
+    await context.close();
+  }
+
+  await page.getByLabel(label).click();
+  await expect(page.getByLabel(label)).not.toBeChecked();
+
+  {
+    const { context, anon } = await anonLanding();
+    await expect(anon.getByText(TOPIC_A, { exact: true })).toBeHidden();
+    await context.close();
+  }
 });

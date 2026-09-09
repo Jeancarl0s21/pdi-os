@@ -323,11 +323,18 @@ export interface PublicPortfolioProject {
   coverPath: string | null;
 }
 
+export interface PublicPortfolioStudyingTopic {
+  title: string;
+  moduleTitle: string | null;
+}
+
 export interface PublicPortfolio {
   profile: PublicPortfolioProfile | null;
   status: PublicPortfolioStatus | null;
   links: PublicPortfolioLink[];
   stack: PublicPortfolioStackItem[];
+  /** Topics that are `studying` AND publicly authorized (RN-PUBLIC-STUDY-003). */
+  currentlyStudying: PublicPortfolioStudyingTopic[];
   projects: PublicPortfolioProject[];
 }
 

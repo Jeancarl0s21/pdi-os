@@ -7,6 +7,7 @@ import { ActivityList } from "@/components/roadmap/activity-list";
 import { MaterialList } from "@/components/roadmap/material-list";
 import { TopicActions } from "@/components/roadmap/topic-actions";
 import { TopicAdmin } from "@/components/roadmap/topic-admin";
+import { PublicExposureToggle } from "@/components/roadmap/public-exposure-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getRoadmapTopic } from "@/lib/roadmap/queries";
@@ -53,6 +54,12 @@ export default async function RoadmapTopicPage({
           }}
         />
       </div>
+
+      <PublicExposureToggle
+        topicId={topic.id}
+        authorized={topic.publicExposureAuthorized}
+        status={topic.status}
+      />
 
       {topic.description ? (
         <p className="whitespace-pre-wrap text-sm text-foreground/90">{topic.description}</p>

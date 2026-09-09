@@ -87,6 +87,7 @@ export interface RoadmapTopicDetail {
   notes: string | null;
   status: TopicStatus;
   recommendedLevel: string | null;
+  publicExposureAuthorized: boolean;
   contents: RoadmapContent[];
   activities: RoadmapActivity[];
   materials: RoadmapMaterial[];
