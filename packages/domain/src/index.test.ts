@@ -26,6 +26,9 @@ import {
   TASK_STATUSES,
   toISODate,
   TOPIC_STATUSES,
+  TOPIC_STATUS_LABELS,
+  roadmapProgress,
+  parseContentDidacticBody,
 } from "./index";
 
 // 2026-09-09 is a Wednesday.
@@ -219,5 +222,80 @@ describe("groupTasksByTimeframe", () => {
   it("puts a done task with a past date under today, not overdue", () => {
     const groups = groupTasksByTimeframe([task({ dueDate: "2026-09-01", status: "done" })], TODAY);
     expect(groups.map((g) => g.key)).toEqual(["today"]);
+  });
+});
+
+describe("roadmapProgress", () => {
+  const topic = (
+    status: "not_started" | "studying" | "completed",
+    archivedAt: string | null = null,
+  ) => ({
+    status,
+    archivedAt,
+  });
+
+  it("is 0/0 → 0% with no topics", () => {
+    expect(roadmapProgress([])).toEqual({ completed: 0, total: 0, pct: 0 });
+  });
+
+  it("counts only completed active topics", () => {
+    expect(roadmapProgress([topic("completed"), topic("studying"), topic("not_started")])).toEqual({
+      completed: 1,
+      total: 3,
+      pct: 33,
+    });
+  });
+
+  it("drops archived topics from both numerator and denominator", () => {
+    expect(
+      roadmapProgress([
+        topic("completed"),
+        topic("completed", "2026-01-01T00:00:00Z"),
+        topic("studying"),
+      ]),
+    ).toEqual({ completed: 1, total: 2, pct: 50 });
+  });
+
+  it("is 100% when every active topic is completed", () => {
+    expect(roadmapProgress([topic("completed"), topic("completed")]).pct).toBe(100);
+  });
+
+  it("maps topic status labels to PT-BR", () => {
+    expect(TOPIC_STATUS_LABELS.studying).toBe("Estudando");
+    expect(TOPIC_STATUS_LABELS.completed).toBe("Concluído");
+  });
+});
+
+describe("parseContentDidacticBody", () => {
+  it("returns an empty shape for a missing or non-object payload", () => {
+    expect(parseContentDidacticBody(null)).toEqual({
+      explanation: null,
+      keyPoints: [],
+      example: null,
+      whenToUse: null,
+      pitfalls: null,
+    });
+  });
+
+  it("extracts the editorial fields and camelCases the example", () => {
+    const body = parseContentDidacticBody({
+      explanation: "O que é",
+      key_points: ["a", "b", ""],
+      example: { type: "scenario", context: "ctx", content: "code", result_explanation: "res" },
+      when_to_use: "quando",
+      pitfalls: "cuidado",
+    });
+    expect(body.keyPoints).toEqual(["a", "b"]);
+    expect(body.example).toEqual({
+      type: "scenario",
+      context: "ctx",
+      content: "code",
+      resultExplanation: "res",
+    });
+    expect(body.whenToUse).toBe("quando");
+  });
+
+  it("drops an example that has no meaningful fields", () => {
+    expect(parseContentDidacticBody({ example: {} }).example).toBeNull();
   });
 });
