@@ -6,6 +6,7 @@ import { ContentList } from "@/components/roadmap/content-list";
 import { ActivityList } from "@/components/roadmap/activity-list";
 import { MaterialList } from "@/components/roadmap/material-list";
 import { TopicActions } from "@/components/roadmap/topic-actions";
+import { TopicAdmin } from "@/components/roadmap/topic-admin";
 import { buttonVariants } from "@/components/ui/button";
 import { getRoadmapTopic } from "@/lib/roadmap/queries";
 
@@ -34,11 +35,23 @@ export default async function RoadmapTopicPage({
         }
       />
 
-      <TopicActions
-        topicId={topic.id}
-        status={topic.status}
-        hasCompletedActivity={topic.activities.some((activity) => activity.completedAt !== null)}
-      />
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <TopicActions
+          topicId={topic.id}
+          status={topic.status}
+          hasCompletedActivity={topic.activities.some((activity) => activity.completedAt !== null)}
+        />
+        <TopicAdmin
+          moduleId={topic.moduleId}
+          topic={{
+            id: topic.id,
+            title: topic.title,
+            description: topic.description,
+            notes: topic.notes,
+            recommendedLevel: topic.recommendedLevel,
+          }}
+        />
+      </div>
 
       {topic.description ? (
         <p className="whitespace-pre-wrap text-sm text-foreground/90">{topic.description}</p>

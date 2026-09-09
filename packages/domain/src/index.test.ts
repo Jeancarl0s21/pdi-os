@@ -29,6 +29,7 @@ import {
   TOPIC_STATUS_LABELS,
   roadmapProgress,
   parseContentDidacticBody,
+  slugify,
 } from "./index";
 
 // 2026-09-09 is a Wednesday.
@@ -297,5 +298,17 @@ describe("parseContentDidacticBody", () => {
 
   it("drops an example that has no meaningful fields", () => {
     expect(parseContentDidacticBody({ example: {} }).example).toBeNull();
+  });
+});
+
+describe("slugify", () => {
+  it("lowercases, strips accents, collapses separators", () => {
+    expect(slugify("Engenharia de Dados")).toBe("engenharia-de-dados");
+    expect(slugify("  Modelagem & ETL!! ")).toBe("modelagem-etl");
+    expect(slugify("Já É Ção")).toBe("ja-e-cao");
+  });
+
+  it("returns an empty string for input with no alphanumerics", () => {
+    expect(slugify("--- !!! ---")).toBe("");
   });
 });

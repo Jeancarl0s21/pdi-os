@@ -2,8 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
-import { EmptyState } from "@/components/feedback/empty-state";
-import { TopicList } from "@/components/roadmap/topic-list";
+import { TopicManager } from "@/components/roadmap/topic-manager";
 import { ProgressBar } from "@/components/roadmap/progress-bar";
 import { buttonVariants } from "@/components/ui/button";
 import { getRoadmapModule } from "@/lib/roadmap/queries";
@@ -33,11 +32,7 @@ export default async function RoadmapModulePage({
         <span className="text-sm font-medium text-foreground">Progresso do Module</span>
         <ProgressBar progress={module.progress} />
       </div>
-      {module.topics.length > 0 ? (
-        <TopicList moduleId={module.id} topics={module.topics} />
-      ) : (
-        <EmptyState title="Nenhum Topic ativo neste Module" />
-      )}
+      <TopicManager moduleId={module.id} topics={module.topics} />
     </>
   );
 }

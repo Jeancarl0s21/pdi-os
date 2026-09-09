@@ -21,6 +21,7 @@ export interface RoadmapTopicSummary {
   title: string;
   status: TopicStatus;
   recommendedLevel: string | null;
+  position: number;
 }
 
 export interface RoadmapModuleDetail {
@@ -29,6 +30,23 @@ export interface RoadmapModuleDetail {
   description: string | null;
   progress: RoadmapProgress;
   topics: RoadmapTopicSummary[];
+}
+
+export interface RoadmapArchivedModule {
+  id: string;
+  title: string;
+}
+
+export interface RoadmapArchivedTopic {
+  id: string;
+  title: string;
+  moduleId: string;
+  moduleTitle: string;
+}
+
+export interface RoadmapArchived {
+  modules: RoadmapArchivedModule[];
+  topics: RoadmapArchivedTopic[];
 }
 
 export interface RoadmapContent {

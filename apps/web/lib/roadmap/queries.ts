@@ -1,7 +1,12 @@
 import "server-only";
 import { parseContentDidacticBody, roadmapProgress, type TopicStatus } from "@pdi-os/domain";
 import { createClient } from "@/lib/supabase/server";
-import type { RoadmapModuleDetail, RoadmapOverview, RoadmapTopicDetail } from "./types";
+import type {
+  RoadmapArchived,
+  RoadmapModuleDetail,
+  RoadmapOverview,
+  RoadmapTopicDetail,
+} from "./types";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -119,7 +124,41 @@ export async function getRoadmapModule(id: string): Promise<RoadmapModuleDetail 
       title: t.title,
       status: t.status,
       recommendedLevel: t.recommended_level,
+      position: t.position ?? 0,
     })),
+  };
+}
+
+export async function getRoadmapArchived(): Promise<RoadmapArchived> {
+  const supabase = await createClient();
+
+  const [{ data: modules, error: mErr }, { data: topics, error: tErr }] = await Promise.all([
+    supabase
+      .from("modules")
+      .select("id,title,archived_at")
+      .not("archived_at", "is", null)
+      .order("archived_at", { ascending: false }),
+    supabase
+      .from("topics")
+      .select("id,title,module_id,archived_at,modules(title)")
+      .not("archived_at", "is", null)
+      .order("archived_at", { ascending: false }),
+  ]);
+  if (mErr) throw mErr;
+  if (tErr) throw tErr;
+
+  return {
+    modules: (modules ?? []).map((m) => ({ id: m.id, title: m.title })),
+    topics: (topics ?? []).map((t) => {
+      const rel = t.modules as { title?: string } | { title?: string }[] | null;
+      const moduleTitle = Array.isArray(rel) ? rel[0]?.title : rel?.title;
+      return {
+        id: t.id,
+        title: t.title,
+        moduleId: t.module_id,
+        moduleTitle: moduleTitle ?? "Módulo",
+      };
+    }),
   };
 }
 

@@ -175,9 +175,12 @@ test.beforeAll(async ({}, testInfo) => {
 
 test.afterAll(async () => {
   if (!admin || !ids.track) return;
-  // FKs cascade from topics; tracks/modules use ON DELETE RESTRICT, so go bottom-up.
-  await admin.from("topics").delete().eq("module_id", ids.module);
-  await admin.from("topics").delete().eq("module_id", ids.module2);
+  // tracks→modules and modules→topics are ON DELETE RESTRICT, so go bottom-up;
+  // contents/activities/materials cascade from topics. Covers rows created by
+  // the edit test too (any module under this track).
+  const mods = await admin.from("modules").select("id").eq("track_id", ids.track);
+  const modIds = (mods.data ?? []).map((m) => m.id);
+  if (modIds.length > 0) await admin.from("topics").delete().in("module_id", modIds);
   await admin.from("modules").delete().eq("track_id", ids.track);
   await admin.from("tracks").delete().eq("id", ids.track);
 });
@@ -234,6 +237,44 @@ test("module progress reflects completed active topics", async ({ page }) => {
   );
 
   await admin.from("topics").update({ status: "not_started" }).eq("id", ids.topicB);
+});
+
+test("create, reorder, archive and restore Modules / Topics", async ({ page }) => {
+  const modName = `Edit Mod ${stamp}`;
+  const t1 = `Edit Topic 1 ${stamp}`;
+  const t2 = `Edit Topic 2 ${stamp}`;
+
+  await page.goto("/app/roadmap");
+  await page.getByRole("button", { name: "Gerenciar" }).click();
+  await page.getByRole("button", { name: "Novo Module" }).click();
+  await page.getByLabel("Título").fill(modName);
+  await page.getByRole("button", { name: "Salvar" }).click();
+
+  const modLink = page.getByRole("link", { name: modName });
+  await expect(modLink).toBeVisible();
+  await modLink.click();
+
+  await page.getByRole("button", { name: "Gerenciar" }).click();
+  for (const name of [t1, t2]) {
+    await page.getByRole("button", { name: "Novo Topic" }).click();
+    await page.getByLabel("Título").fill(name);
+    await page.getByRole("button", { name: "Salvar" }).click();
+    await expect(page.getByRole("link", { name })).toBeVisible();
+  }
+
+  // Move Topic 1 down → Topic 2 becomes first (its "up" control turns disabled).
+  await page.getByRole("button", { name: `Mover ${t1} para baixo` }).click();
+  await expect(page.getByRole("button", { name: `Mover ${t2} para cima` })).toBeDisabled();
+
+  // Archive Topic 1, then restore it from the archived screen.
+  await page.getByRole("button", { name: `Arquivar ${t1}` }).click();
+  await expect(page.getByRole("link", { name: t1 })).toBeHidden();
+
+  await page.goto("/app/roadmap/arquivados");
+  const restore = page.getByRole("button", { name: `Restaurar ${t1}` });
+  await expect(restore).toBeVisible();
+  await restore.click();
+  await expect(restore).toBeHidden();
 });
 
 test("drive a Topic from not_started to completed and reopen it", async ({ page }) => {
