@@ -36,6 +36,7 @@ export async function getPublicPortfolio(): Promise<PublicPortfolioView | null> 
     status: dto.status,
     links: dto.links ?? [],
     stack: dto.stack ?? [],
+    currentlyStudying: dto.currentlyStudying ?? [],
     projects: (dto.projects ?? []).map((project) => ({
       ...project,
       coverUrl: publicCoverUrl(project.coverPath),

@@ -169,7 +169,7 @@ export async function getRoadmapTopic(id: string): Promise<RoadmapTopicDetail | 
   const { data: topic, error: topicError } = await supabase
     .from("topics")
     .select(
-      "id,module_id,title,description,notes,status,recommended_level,archived_at,modules(title)",
+      "id,module_id,title,description,notes,status,recommended_level,public_exposure_authorized,archived_at,modules(title)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -211,6 +211,7 @@ export async function getRoadmapTopic(id: string): Promise<RoadmapTopicDetail | 
     notes: topic.notes,
     status: topic.status,
     recommendedLevel: topic.recommended_level,
+    publicExposureAuthorized: topic.public_exposure_authorized ?? false,
     contents: (contents ?? []).map((row) => ({
       id: row.id,
       title: row.title,

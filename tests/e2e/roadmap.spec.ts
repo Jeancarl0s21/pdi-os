@@ -37,6 +37,11 @@ test.beforeAll(async ({}, testInfo) => {
   const list = await admin.auth.admin.listUsers();
   userId = list.data.users.find((u) => u.email === E2E_USER.email)!.id;
 
+  // A profile so the public landing renders past the "em construção" state.
+  await admin
+    .from("portfolio_profiles")
+    .upsert({ user_id: userId, name: "Jean Carlos" }, { onConflict: "user_id" });
+
   const track = await admin
     .from("tracks")
     .insert({ user_id: userId, slug: `track-e2e-${stamp}`, title: TRACK, source_order: 999 })
@@ -315,4 +320,39 @@ test("the roadmap screens have no serious a11y violations", async ({ page }) => 
   await page.goto(`/app/roadmap/${ids.module}/${ids.topicA}`);
   await page.getByRole("button", { name: new RegExp(CONTENT) }).click();
   expect(serious((await new AxeBuilder({ page }).analyze()).violations)).toEqual([]);
+});
+
+test("authorizing a studying Topic surfaces it in the public 'Atualmente estudando'", async ({
+  page,
+  browser,
+}) => {
+  const label = "Exibir no Portfolio enquanto estou estudando";
+
+  async function anonLanding() {
+    const context = await browser.newContext();
+    const anon = await context.newPage();
+    await anon.goto("/");
+    return { context, anon };
+  }
+
+  // Topic A is `studying` from the seed. Controlled checkbox → click, don't .check().
+  await page.goto(`/app/roadmap/${ids.module}/${ids.topicA}`);
+  await page.getByLabel(label).click();
+  await expect(page.getByLabel(label)).toBeChecked();
+
+  {
+    const { context, anon } = await anonLanding();
+    await expect(anon.getByRole("heading", { name: "Atualmente estudando" })).toBeVisible();
+    await expect(anon.getByText(TOPIC_A, { exact: true })).toBeVisible();
+    await context.close();
+  }
+
+  await page.getByLabel(label).click();
+  await expect(page.getByLabel(label)).not.toBeChecked();
+
+  {
+    const { context, anon } = await anonLanding();
+    await expect(anon.getByText(TOPIC_A, { exact: true })).toBeHidden();
+    await context.close();
+  }
 });

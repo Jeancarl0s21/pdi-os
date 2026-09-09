@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { getPublicPortfolio } from "@/lib/portfolio/queries";
 import { Hero } from "@/components/portfolio/hero";
 import { AboutStack } from "@/components/portfolio/about-stack";
+import { CurrentlyStudying } from "@/components/portfolio/currently-studying";
 import { ProjectGrid } from "@/components/portfolio/project-grid";
 import { ContactFooter } from "@/components/portfolio/contact-footer";
 
@@ -30,6 +31,7 @@ export default async function PortfolioLandingPage() {
     <>
       <Hero profile={portfolio.profile} status={portfolio.status} />
       <AboutStack profile={portfolio.profile} stack={portfolio.stack} />
+      <CurrentlyStudying topics={portfolio.currentlyStudying} />
       <Suspense fallback={null}>
         <ProjectGrid projects={portfolio.projects} />
       </Suspense>

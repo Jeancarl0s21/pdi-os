@@ -96,3 +96,39 @@ export async function setActivityCompleted(
   revalidateRoadmap();
   return { ok: true };
 }
+
+const exposureSchema = z.object({ id: z.uuid(), authorized: z.enum(["true", "false"]) });
+
+/**
+ * Explicit public-exposure authorization for a Topic (RN-PUBLIC-STUDY-002). The
+ * flag persists when the Topic leaves `studying` (RN-PUBLIC-STUDY-005); the
+ * public RPC only shows it while `status = 'studying'`. Direct RLS-scoped
+ * update — the topics_owner_update policy enforces ownership.
+ */
+export async function setTopicPublicExposure(
+  _prev: RoadmapActionResult,
+  formData: FormData,
+): Promise<RoadmapActionResult> {
+  const parsed = exposureSchema.safeParse({
+    id: formData.get("id"),
+    authorized: formData.get("authorized"),
+  });
+  if (!parsed.success) return { ok: false, message: "Topic inválido." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, message: "Sessão expirada." };
+
+  const { error } = await supabase
+    .from("topics")
+    .update({ public_exposure_authorized: parsed.data.authorized === "true" })
+    .eq("id", parsed.data.id)
+    .eq("user_id", user.id);
+  if (error) return { ok: false, message: "Não foi possível atualizar a exposição pública." };
+
+  revalidateRoadmap();
+  revalidatePath("/");
+  return { ok: true };
+}
