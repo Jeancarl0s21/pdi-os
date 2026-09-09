@@ -23,3 +23,13 @@ test("login form exposes labelled email and password fields", async ({ page }) =
   await expect(page.getByLabel("Senha", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible();
 });
+
+test("wrong credentials keep the user on /login with a clear message", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("E-mail", { exact: true }).fill("nao-existe@pdi-os.test");
+  await page.getByLabel("Senha", { exact: true }).fill("senha-errada");
+  await page.getByRole("button", { name: "Entrar" }).click();
+
+  await expect(page).toHaveURL(/\/login/);
+  await expect(page.getByText("Não foi possível autenticar.")).toBeVisible();
+});
