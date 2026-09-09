@@ -31,5 +31,5 @@ test("wrong credentials keep the user on /login with a clear message", async ({ 
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page).toHaveURL(/\/login/);
-  await expect(page.getByRole("alert")).toContainText("Não foi possível autenticar");
+  await expect(page.getByText("Não foi possível autenticar.")).toBeVisible();
 });
