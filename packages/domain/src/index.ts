@@ -10,10 +10,15 @@ export const PROJECT_EXECUTION_STATUSES = [
 ] as const;
 export const PROJECT_PUBLICATION_STATUSES = ["draft", "published"] as const;
 
+/** Execution statuses a Project can be set to from the editor (archive is an action). */
+export const PROJECT_ACTIVE_EXECUTION_STATUSES = ["planned", "in_progress", "completed"] as const;
+
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 export type TaskCategory = (typeof TASK_CATEGORIES)[number];
 export type TopicStatus = (typeof TOPIC_STATUSES)[number];
+export type ProjectExecutionStatus = (typeof PROJECT_EXECUTION_STATUSES)[number];
+export type ProjectPublicationStatus = (typeof PROJECT_PUBLICATION_STATUSES)[number];
 
 // UI labels (PT-BR). The stored vocabulary stays English (architecture contract).
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
@@ -33,6 +38,18 @@ export const TASK_CATEGORY_LABELS: Record<TaskCategory, string> = {
   study: "Estudo",
   project: "Projeto",
   personal: "Pessoal",
+};
+
+export const PROJECT_EXECUTION_STATUS_LABELS: Record<ProjectExecutionStatus, string> = {
+  planned: "Planejado",
+  in_progress: "Em desenvolvimento",
+  completed: "Concluído",
+  archived: "Arquivado",
+};
+
+export const PROJECT_PUBLICATION_STATUS_LABELS: Record<ProjectPublicationStatus, string> = {
+  draft: "Rascunho",
+  published: "Publicado",
 };
 
 // ---------------------------------------------------------------------------

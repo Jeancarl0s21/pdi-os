@@ -8,6 +8,9 @@ import {
   PLANNING_CUTS,
   PLANNING_CUT_LABELS,
   type PlannableTask,
+  PROJECT_EXECUTION_STATUS_LABELS,
+  PROJECT_EXECUTION_STATUSES,
+  PROJECT_PUBLICATION_STATUS_LABELS,
   PROJECT_PUBLICATION_STATUSES,
   startOfMonth,
   startOfWeek,
@@ -46,6 +49,15 @@ describe("architecture status contracts", () => {
     for (const s of TASK_STATUSES) expect(TASK_STATUS_LABELS[s]).toBeTruthy();
     for (const p of TASK_PRIORITIES) expect(TASK_PRIORITY_LABELS[p]).toBeTruthy();
     for (const c of TASK_CATEGORIES) expect(TASK_CATEGORY_LABELS[c]).toBeTruthy();
+  });
+
+  it("labels every member of each project vocabulary", () => {
+    for (const s of PROJECT_EXECUTION_STATUSES) {
+      expect(PROJECT_EXECUTION_STATUS_LABELS[s]).toBeTruthy();
+    }
+    for (const s of PROJECT_PUBLICATION_STATUSES) {
+      expect(PROJECT_PUBLICATION_STATUS_LABELS[s]).toBeTruthy();
+    }
   });
 });
 

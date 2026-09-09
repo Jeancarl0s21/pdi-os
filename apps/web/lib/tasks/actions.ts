@@ -3,25 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { TASK_STATUSES } from "@pdi-os/domain";
+import { type ActionResult, fieldErrorsFrom } from "@/lib/action-result";
 import { createClient } from "@/lib/supabase/server";
 import { quickTaskSchema, taskFormSchema } from "./schema";
 
 const APPEND_POSITION = 2_147_483_647;
 
-export interface TaskActionResult {
-  ok: boolean;
-  fieldErrors?: Record<string, string>;
-  message?: string;
-}
+export type TaskActionResult = ActionResult;
 
-function firstErrors(error: z.ZodError): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const issue of error.issues) {
-    const key = issue.path[0];
-    if (typeof key === "string" && !(key in out)) out[key] = issue.message;
-  }
-  return out;
-}
+const firstErrors = fieldErrorsFrom;
 
 function readForm(formData: FormData) {
   return {

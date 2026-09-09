@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { Task } from "@/lib/tasks/types";
 import { TaskMeta } from "./task-meta";
-import { useTaskMutation } from "./use-task-mutation";
+import { useServerMutation } from "@/lib/hooks/use-server-mutation";
 
 const ORDER = TASK_STATUSES;
 
@@ -39,8 +39,8 @@ function CardButton({
 }
 
 export function KanbanCard({ task, onOpen }: { task: Task; onOpen: (id: string) => void }) {
-  const [move, moving] = useTaskMutation(moveTask);
-  const [archive, archiving] = useTaskMutation(archiveTask);
+  const [move, moving] = useServerMutation(moveTask);
+  const [archive, archiving] = useServerMutation(archiveTask);
 
   const index = ORDER.indexOf(task.status);
   const prev: TaskStatus | null = index > 0 ? ORDER[index - 1] : null;
