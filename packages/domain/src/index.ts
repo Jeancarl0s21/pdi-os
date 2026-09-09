@@ -52,6 +52,37 @@ export const PROJECT_PUBLICATION_STATUS_LABELS: Record<ProjectPublicationStatus,
   published: "Publicado",
 };
 
+// Publication requirements — mirrors the public.publish_project invariant.
+export const PROJECT_PUBLISH_REQUIREMENTS = [
+  "shortDescription",
+  "fullDescription",
+  "technologies",
+  "cover",
+] as const;
+export type ProjectPublishRequirement = (typeof PROJECT_PUBLISH_REQUIREMENTS)[number];
+
+export const PROJECT_PUBLISH_REQUIREMENT_LABELS: Record<ProjectPublishRequirement, string> = {
+  shortDescription: "Descrição curta",
+  fullDescription: "Descrição completa",
+  technologies: "Ao menos uma tecnologia",
+  cover: "Capa",
+};
+
+/** What a Project still needs before it can be published (RN-PROJECT-009). */
+export function projectPublishReadiness(project: {
+  shortDescription: string | null;
+  fullDescription: string | null;
+  technologies: string[];
+  coverPath: string | null;
+}): { ready: boolean; missing: ProjectPublishRequirement[] } {
+  const missing: ProjectPublishRequirement[] = [];
+  if (!project.shortDescription?.trim()) missing.push("shortDescription");
+  if (!project.fullDescription?.trim()) missing.push("fullDescription");
+  if (project.technologies.length === 0) missing.push("technologies");
+  if (!project.coverPath?.trim()) missing.push("cover");
+  return { ready: missing.length === 0, missing };
+}
+
 // ---------------------------------------------------------------------------
 // Dates — operate on "YYYY-MM-DD" strings to avoid Date timezone traps.
 // `today` is a Date only so the caller can pass the browser's real local day.
