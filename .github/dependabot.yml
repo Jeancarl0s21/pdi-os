@@ -4,10 +4,15 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     groups:
-      foundation-dependencies:
+      # Low-risk bumps land together in one PR.
+      minor-and-patch:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    # Majors are intentionally NOT grouped — Dependabot opens one PR per major
+    # bump so risky upgrades (typescript, eslint, vitest, …) get reviewed and
+    # validated in isolation.
   - package-ecosystem: github-actions
     directory: /
     schedule:
