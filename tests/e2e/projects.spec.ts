@@ -108,11 +108,13 @@ test("upload a cover, publish, preview, then unpublish", async ({ page }) => {
   await expect(page.getByText("Publicado")).toBeVisible();
 
   await page.getByRole("link", { name: "Ver Preview" }).click();
-  await expect(page.getByRole("heading", { name, level: 2 })).toBeVisible();
-  await expect(page.getByText("Descrição completa do project para publicação.")).toBeVisible();
-  await expect(page.getByText("Postgres")).toBeVisible();
+  const preview = page.getByRole("dialog", { name });
+  await expect(preview.getByRole("heading", { name, level: 2 })).toBeVisible();
+  await expect(preview.getByText("Descrição completa do project para publicação.")).toBeVisible();
+  await expect(preview.getByText("Postgres")).toBeVisible();
 
-  await page.getByRole("link", { name: "Editor" }).click();
+  await preview.getByRole("button", { name: "Fechar" }).click();
+  await page.waitForURL(EDITOR_URL);
   await page.getByRole("button", { name: "Despublicar" }).click();
   const dialog = page.getByRole("dialog", { name: "Despublicar Project" });
   await dialog.getByRole("button", { name: "Despublicar" }).click();

@@ -276,3 +276,57 @@ export function groupTasksByTimeframe<T extends PlannableTask>(
     tasks: [...buckets[key]].sort(compare),
   })).filter((group) => group.tasks.length > 0);
 }
+
+// ---------------------------------------------------------------------------
+// Public Portfolio — the DTO shape returned by public.get_public_portfolio().
+// Field names match the SQL json_build_object keys exactly (camelCase); the
+// server layer only resolves cover URLs on top of this.
+// ---------------------------------------------------------------------------
+
+export interface PublicPortfolioProfile {
+  name: string;
+  headline: string | null;
+  intro: string | null;
+  about: string | null;
+}
+
+export interface PublicPortfolioStatus {
+  company: string | null;
+  role: string | null;
+  focus: string | null;
+  /** building_text, or the name of the published current project. */
+  building: string | null;
+}
+
+export interface PublicPortfolioLink {
+  type: string | null;
+  label: string;
+  href: string;
+}
+
+export interface PublicPortfolioStackItem {
+  name: string;
+  groupName: string | null;
+  isFeatured: boolean;
+}
+
+export interface PublicPortfolioProject {
+  id: string;
+  name: string;
+  shortDescription: string | null;
+  fullDescription: string | null;
+  technologies: string[];
+  githubUrl: string | null;
+  demoUrl: string | null;
+  projectDate: string | null;
+  executionStatus: ProjectExecutionStatus;
+  coverPath: string | null;
+}
+
+export interface PublicPortfolio {
+  profile: PublicPortfolioProfile | null;
+  status: PublicPortfolioStatus | null;
+  links: PublicPortfolioLink[];
+  stack: PublicPortfolioStackItem[];
+  projects: PublicPortfolioProject[];
+}
