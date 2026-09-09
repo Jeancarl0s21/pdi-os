@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@pdi-os/domain": "workspace:*",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.55.0",
     "class-variance-authority": "^0.7.1",

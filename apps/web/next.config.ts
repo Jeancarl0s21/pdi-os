@@ -13,6 +13,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: ["127.0.0.1"],
+  transpilePackages: ["@pdi-os/domain"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

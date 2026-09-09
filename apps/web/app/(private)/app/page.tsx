@@ -1,16 +1,43 @@
-import { LayoutDashboard } from "lucide-react";
+import Link from "next/link";
 import { PageHeader } from "@/components/shell/page-header";
-import { EmptyState } from "@/components/feedback/empty-state";
+import { getTaskCounts } from "@/lib/tasks/queries";
+import { cn } from "@/lib/utils";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const counts = await getTaskCounts();
+
+  const cards = [
+    { label: "Pendentes", value: counts.pending, emphasised: false },
+    { label: "Atrasadas", value: counts.overdue, emphasised: counts.overdue > 0 },
+    { label: "Concluídas", value: counts.done, emphasised: false },
+  ];
+
   return (
     <>
       <PageHeader title="Dashboard" description="O que precisa da sua atenção agora." />
-      <EmptyState
-        icon={<LayoutDashboard aria-hidden />}
-        title="Dashboard em construção"
-        description="O resumo de execução, estudo atual, Roadmap e quick actions chegam nos próximos slices."
-      />
+
+      <section className="grid gap-4 sm:grid-cols-3" aria-label="Resumo de Tasks">
+        {cards.map((card) => (
+          <div
+            key={card.label}
+            className="flex flex-col gap-1 rounded-lg border border-border bg-card px-5 py-4"
+          >
+            <span className="text-sm text-muted-foreground">{card.label}</span>
+            <span
+              className={cn(
+                "text-3xl font-semibold tabular-nums",
+                card.emphasised ? "text-destructive" : "text-foreground",
+              )}
+            >
+              {card.value}
+            </span>
+          </div>
+        ))}
+      </section>
+
+      <Link href="/app/tarefas" className="text-sm text-primary underline-offset-4 hover:underline">
+        Ver todas as Tasks →
+      </Link>
     </>
   );
 }
