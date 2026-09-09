@@ -1,5 +1,5 @@
 begin;
-select plan(2);
+select plan(3);
 
 -- Architecture rule: RLS predicates must use (select auth.uid()), never a bare
 -- auth.uid() that Postgres re-evaluates per row (Supabase advisor auth_rls_initplan).
@@ -30,6 +30,22 @@ select is(
   ),
   2,
   'both app_users owner policies wrap auth.uid()'
+);
+
+select is(
+  (
+    select count(*)::int
+    from pg_policies
+    where schemaname = 'storage'
+      and policyname like 'storage\_owner\_%'
+      and (
+        (coalesce(qual, '') ~ 'auth\.uid\(\)' and coalesce(qual, '') !~ 'SELECT auth\.uid\(\)')
+        or
+        (coalesce(with_check, '') ~ 'auth\.uid\(\)' and coalesce(with_check, '') !~ 'SELECT auth\.uid\(\)')
+      )
+  ),
+  0,
+  'no storage.objects owner policy uses a bare auth.uid()'
 );
 
 select * from finish();
