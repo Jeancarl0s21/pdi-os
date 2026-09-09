@@ -4,10 +4,16 @@ import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ArchivedList } from "@/components/tasks/archived-list";
 import { buttonVariants } from "@/components/ui/button";
-import { listArchivedTasks } from "@/lib/tasks/queries";
+import { ARCHIVED_PAGE_SIZE, listArchivedTasks } from "@/lib/tasks/queries";
 
-export default async function ArquivadasPage() {
-  const tasks = await listArchivedTasks();
+export default async function ArquivadasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ take?: string }>;
+}) {
+  const { take: takeParam } = await searchParams;
+  const take = Math.min(Math.max(Number(takeParam) || ARCHIVED_PAGE_SIZE, ARCHIVED_PAGE_SIZE), 300);
+  const { tasks, hasMore } = await listArchivedTasks(take);
 
   return (
     <>
@@ -27,7 +33,17 @@ export default async function ArquivadasPage() {
           description="Tasks que você arquivar no Kanban aparecem aqui."
         />
       ) : (
-        <ArchivedList tasks={tasks} />
+        <>
+          <ArchivedList tasks={tasks} />
+          {hasMore ? (
+            <Link
+              href={`/app/tarefas/arquivadas?take=${take + ARCHIVED_PAGE_SIZE}`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Carregar mais
+            </Link>
+          ) : null}
+        </>
       )}
     </>
   );
