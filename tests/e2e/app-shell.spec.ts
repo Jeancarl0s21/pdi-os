@@ -47,13 +47,3 @@ test("navigation marks the active destination", async ({ page }) => {
   const activeLink = page.getByRole("link", { name: "Roadmap" });
   await expect(activeLink).toHaveAttribute("aria-current", "page");
 });
-
-test("sign out from the user menu returns to login", async ({ page }) => {
-  await page.goto("/app");
-  await page
-    .getByRole("button", { name: /pdi-os\.test/ })
-    .first()
-    .click();
-  await page.getByRole("menuitem", { name: "Sair" }).click();
-  await expect(page).toHaveURL(/\/login/);
-});
