@@ -2,13 +2,17 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { STORAGE_STATE } from "./global-setup";
 
-test.use({ storageState: STORAGE_STATE });
+// The compact navigation is driven by the CSS `lg` breakpoint, not device
+// emulation — a narrow viewport in the desktop project exercises it, and keeps
+// the shared storageState session working (branded-Chrome mobile contexts drop
+// it). Runs once.
+test.use({ storageState: STORAGE_STATE, viewport: { width: 390, height: 844 } });
 
 test.beforeEach(() => {
-  test.skip(test.info().project.name !== "chromium-mobile", "mobile drawer layout");
+  test.skip(test.info().project.name !== "chromium-desktop", "runs once, narrow viewport");
 });
 
-test("mobile drawer opens, exposes destinations, closes on Escape", async ({ page }) => {
+test("compact drawer opens, exposes destinations, closes on Escape", async ({ page }) => {
   await page.goto("/app");
   await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible();
 
@@ -27,7 +31,7 @@ test("mobile drawer opens, exposes destinations, closes on Escape", async ({ pag
   await expect(drawer).toBeHidden();
 });
 
-test("mobile drawer navigates and then closes", async ({ page }) => {
+test("compact drawer navigates and then closes", async ({ page }) => {
   await page.goto("/app");
   await page.getByRole("button", { name: "Abrir navegação" }).click();
   await page
