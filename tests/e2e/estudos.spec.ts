@@ -9,7 +9,7 @@ const serious = (violations: { impact?: string | null }[]) =>
   violations.filter((v) => ["critical", "serious"].includes(v.impact ?? ""));
 
 const stamp = Date.now();
-const TOPIC = `Estudo Topic ${stamp}`;
+const TOPIC = `RoadmapTopic-${stamp}`;
 
 let admin: SupabaseClient;
 let userId: string;
@@ -113,7 +113,8 @@ test("register, edit, filter by date and delete a StudySession", async ({ page }
 test("Registrar estudo from a Topic prefills the Topic, then Sem Topic hides it", async ({
   page,
 }) => {
-  const title = `Do Topic ${stamp}`;
+  const title = `SessaoDoTopic-${stamp}`;
+  const inList = page.getByRole("listitem").filter({ hasText: title });
 
   await page.goto(`/app/roadmap/${ids.module}/${ids.topic}`);
   await page.getByRole("link", { name: "Registrar estudo deste Topic" }).click();
@@ -122,10 +123,10 @@ test("Registrar estudo from a Topic prefills the Topic, then Sem Topic hides it"
   await expect(dialog(page).getByLabel("Topic")).toHaveValue(ids.topic);
   await dialog(page).getByLabel("Assunto").fill(title);
   await dialog(page).getByRole("button", { name: "Salvar" }).click();
-  await expect(page.getByText(title)).toBeVisible();
+  await expect(inList).toHaveCount(1);
 
   await page.getByLabel("Sem Topic").check();
-  await expect(page.getByText(title)).toBeHidden();
+  await expect(inList).toHaveCount(0);
 });
 
 test("the Estudos screen has no serious a11y violations", async ({ page }) => {
