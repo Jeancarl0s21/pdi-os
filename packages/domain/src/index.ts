@@ -414,3 +414,17 @@ export function parseContentDidacticBody(payload: unknown): ContentDidacticBody 
     pitfalls: asString(raw.pitfalls),
   };
 }
+
+/**
+ * A URL-safe slug from a title: lowercase, accent-stripped, non-alphanumerics
+ * collapsed to single hyphens. Used when creating Modules / Topics (the stored
+ * `slug` column is required and non-empty).
+ */
+export function slugify(input: string): string {
+  return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
