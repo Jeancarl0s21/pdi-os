@@ -1,6 +1,7 @@
 import "server-only";
 import { parseContentDidacticBody, roadmapProgress, type TopicStatus } from "@pdi-os/domain";
 import { createClient } from "@/lib/supabase/server";
+import { listEvidenceByContext } from "@/lib/evidence/queries";
 import type {
   RoadmapArchived,
   RoadmapModuleDetail,
@@ -196,6 +197,11 @@ export async function getRoadmapTopic(id: string): Promise<RoadmapTopicDetail | 
       .order("position", { ascending: true }),
   ]);
 
+  const evidenceByActivity = await listEvidenceByContext(
+    "activity",
+    (activities ?? []).map((row) => row.id as string),
+  );
+
   const moduleTitle =
     (topic.modules as { title?: string } | { title?: string }[] | null) &&
     (Array.isArray(topic.modules)
@@ -230,6 +236,7 @@ export async function getRoadmapTopic(id: string): Promise<RoadmapTopicDetail | 
       externalUrl: row.external_url,
       resources: toStringArray(row.resources),
       completedAt: row.completed_at,
+      evidence: evidenceByActivity.get(row.id) ?? [],
     })),
     materials: (materials ?? []).map((row) => ({
       id: row.id,

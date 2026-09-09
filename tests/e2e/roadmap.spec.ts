@@ -356,3 +356,19 @@ test("authorizing a studying Topic surfaces it in the public 'Atualmente estudan
     await context.close();
   }
 });
+
+test("attach and remove a link Evidence on an Activity", async ({ page }) => {
+  const url = `https://example.com/evid-${stamp}`;
+  await page.goto(`/app/roadmap/${ids.module}/${ids.topicA}`);
+
+  const card = page.getByRole("listitem").filter({ hasText: ACTIVITY });
+  await card.getByRole("button", { name: "Adicionar evidência" }).click();
+  await card.getByLabel("URL", { exact: true }).fill(url);
+  await card.getByRole("button", { name: "Adicionar", exact: true }).click();
+
+  const link = card.getByRole("link", { name: url, exact: true });
+  await expect(link).toBeVisible();
+
+  await card.getByRole("button", { name: `Remover ${url}` }).click();
+  await expect(link).toBeHidden();
+});

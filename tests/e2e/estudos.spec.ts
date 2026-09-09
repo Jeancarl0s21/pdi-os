@@ -136,3 +136,21 @@ test("the Estudos screen has no serious a11y violations", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Registrar estudo" })).toBeVisible();
   expect(serious((await new AxeBuilder({ page }).analyze()).violations)).toEqual([]);
 });
+
+test("attach a link Evidence to a StudySession from the edit drawer", async ({ page }) => {
+  const title = `EvidSess-${stamp}`;
+  const url = `https://example.com/sess-evid-${stamp}`;
+
+  await page.goto("/app/estudos");
+  await page.getByRole("button", { name: "Registrar estudo" }).click();
+  await dialog(page).getByLabel("Assunto").fill(title);
+  await dialog(page).getByRole("button", { name: "Salvar" }).click();
+  await expect(dialog(page)).toBeHidden();
+
+  await page.getByRole("button", { name: `Editar ${title}` }).click();
+  const d = dialog(page);
+  await d.getByRole("button", { name: "Adicionar evidência" }).click();
+  await d.getByLabel("URL", { exact: true }).fill(url);
+  await d.getByRole("button", { name: "Adicionar", exact: true }).click();
+  await expect(d.getByRole("link", { name: url, exact: true })).toBeVisible();
+});

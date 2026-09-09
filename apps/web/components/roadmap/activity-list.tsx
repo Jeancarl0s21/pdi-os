@@ -6,6 +6,7 @@ import { useServerMutation } from "@/lib/hooks/use-server-mutation";
 import type { RoadmapActivity } from "@/lib/roadmap/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { EvidenceList } from "@/components/evidence/evidence-list";
 
 function Detail({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
@@ -86,6 +87,10 @@ function ActivityCard({ activity }: { activity: RoadmapActivity }) {
             Abrir ambiente
           </a>
         ) : null}
+      </div>
+
+      <div className="border-t border-border pt-3">
+        <EvidenceList context="activity" contextId={activity.id} items={activity.evidence} />
       </div>
     </li>
   );
