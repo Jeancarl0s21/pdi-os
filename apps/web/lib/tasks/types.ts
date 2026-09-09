@@ -8,8 +8,9 @@ export interface Task {
   priority: TaskPriority;
   status: TaskStatus;
   dueDate: string | null;
-  position: number;
+  position: number | null;
   createdAt: string;
+  archivedAt: string | null;
   tags: string[];
 }
 
