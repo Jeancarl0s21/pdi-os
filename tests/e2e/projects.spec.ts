@@ -26,6 +26,16 @@ async function createProject(page: Page, name: string, tech: string) {
   await page.waitForURL(EDITOR_URL);
 }
 
+async function makePublishable(page: Page, name: string) {
+  await createProject(page, name, "Postgres");
+  await page
+    .getByLabel("Descrição completa")
+    .fill("Descrição completa do project para publicação.");
+  await page.getByRole("button", { name: "Salvar" }).click();
+  await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/cover.png");
+  await expect(page.getByRole("img", { name: "Capa do Project" })).toBeVisible();
+}
+
 test("create a project and land on its editor", async ({ page }) => {
   const name = `Proj ${Date.now()}`;
   await createProject(page, name, "Postgres");
@@ -81,11 +91,41 @@ test("status filter navigates and filters the list", async ({ page }) => {
   );
 });
 
-test("projects list and editor have no serious a11y violations", async ({ page }) => {
-  await createProject(page, `Proj a11y ${Date.now()}`, "Trino");
+test("publish is disabled until the requirements are met", async ({ page }) => {
+  await createProject(page, `Proj gate ${Date.now()}`, "Postgres");
 
-  const editorViolations = serious((await new AxeBuilder({ page }).analyze()).violations);
-  expect(editorViolations).toEqual([]);
+  await expect(page.getByRole("button", { name: "Publicar" })).toBeDisabled();
+  await expect(page.getByRole("listitem").filter({ hasText: "Capa" })).toBeVisible();
+});
+
+test("upload a cover, publish, preview, then unpublish", async ({ page }) => {
+  const name = `Proj publish ${Date.now()}`;
+  await makePublishable(page, name);
+
+  const publish = page.getByRole("button", { name: "Publicar" });
+  await expect(publish).toBeEnabled();
+  await publish.click();
+  await expect(page.getByText("Publicado")).toBeVisible();
+
+  await page.getByRole("link", { name: "Ver Preview" }).click();
+  await expect(page.getByRole("heading", { name, level: 2 })).toBeVisible();
+  await expect(page.getByText("Descrição completa do project para publicação.")).toBeVisible();
+  await expect(page.getByText("Postgres")).toBeVisible();
+
+  await page.getByRole("link", { name: "Editor" }).click();
+  await page.getByRole("button", { name: "Despublicar" }).click();
+  const dialog = page.getByRole("dialog", { name: "Despublicar Project" });
+  await dialog.getByRole("button", { name: "Despublicar" }).click();
+  await expect(page.getByText("Rascunho")).toBeVisible();
+});
+
+test("projects list, editor and preview have no serious a11y violations", async ({ page }) => {
+  await makePublishable(page, `Proj a11y ${Date.now()}`);
+
+  expect(serious((await new AxeBuilder({ page }).analyze()).violations)).toEqual([]);
+
+  await page.getByRole("link", { name: "Ver Preview" }).click();
+  expect(serious((await new AxeBuilder({ page }).analyze()).violations)).toEqual([]);
 
   await page.goto("/app/projetos");
   expect(serious((await new AxeBuilder({ page }).analyze()).violations)).toEqual([]);

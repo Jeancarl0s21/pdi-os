@@ -12,6 +12,9 @@ import {
   PROJECT_EXECUTION_STATUSES,
   PROJECT_PUBLICATION_STATUS_LABELS,
   PROJECT_PUBLICATION_STATUSES,
+  PROJECT_PUBLISH_REQUIREMENT_LABELS,
+  PROJECT_PUBLISH_REQUIREMENTS,
+  projectPublishReadiness,
   startOfMonth,
   startOfWeek,
   TASK_CATEGORIES,
@@ -58,6 +61,39 @@ describe("architecture status contracts", () => {
     for (const s of PROJECT_PUBLICATION_STATUSES) {
       expect(PROJECT_PUBLICATION_STATUS_LABELS[s]).toBeTruthy();
     }
+    for (const r of PROJECT_PUBLISH_REQUIREMENTS) {
+      expect(PROJECT_PUBLISH_REQUIREMENT_LABELS[r]).toBeTruthy();
+    }
+  });
+});
+
+describe("projectPublishReadiness", () => {
+  const full = {
+    shortDescription: "curta",
+    fullDescription: "completa",
+    technologies: ["Postgres"],
+    coverPath: "u/p/cover",
+  };
+
+  it("is ready when every requirement is present", () => {
+    expect(projectPublishReadiness(full)).toEqual({ ready: true, missing: [] });
+  });
+
+  it("lists each missing requirement", () => {
+    expect(projectPublishReadiness({ ...full, shortDescription: "  " }).missing).toEqual([
+      "shortDescription",
+    ]);
+    expect(projectPublishReadiness({ ...full, fullDescription: null }).missing).toEqual([
+      "fullDescription",
+    ]);
+    expect(projectPublishReadiness({ ...full, technologies: [] }).missing).toEqual([
+      "technologies",
+    ]);
+    expect(projectPublishReadiness({ ...full, coverPath: null }).missing).toEqual(["cover"]);
+  });
+
+  it("is not ready with anything missing", () => {
+    expect(projectPublishReadiness({ ...full, coverPath: null }).ready).toBe(false);
   });
 });
 

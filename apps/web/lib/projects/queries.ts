@@ -1,10 +1,11 @@
 import "server-only";
 import type { ProjectExecutionStatus } from "@pdi-os/domain";
 import { createClient } from "@/lib/supabase/server";
+import { COVER_BUCKET, COVER_SIGNED_URL_TTL } from "./storage";
 import type { Project } from "./types";
 
 const PROJECT_COLUMNS =
-  "id,name,short_description,full_description,execution_status,publication_status,github_url,demo_url,project_date,updated_at,project_technologies(name,position)";
+  "id,name,short_description,full_description,execution_status,publication_status,github_url,demo_url,project_date,cover_path,updated_at,project_technologies(name,position)";
 
 type RawProject = {
   id: string;
@@ -16,6 +17,7 @@ type RawProject = {
   github_url: string | null;
   demo_url: string | null;
   project_date: string | null;
+  cover_path: string | null;
   updated_at: string;
   project_technologies: { name: string; position: number }[] | null;
 };
@@ -31,6 +33,8 @@ function mapProject(row: RawProject): Project {
     githubUrl: row.github_url,
     demoUrl: row.demo_url,
     projectDate: row.project_date,
+    coverPath: row.cover_path,
+    coverUrl: null,
     updatedAt: row.updated_at,
     technologies: (row.project_technologies ?? [])
       .slice()
@@ -68,5 +72,14 @@ export async function getProject(id: string): Promise<Project | null> {
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
-  return data ? mapProject(data as unknown as RawProject) : null;
+  if (!data) return null;
+
+  const project = mapProject(data as unknown as RawProject);
+  if (project.coverPath) {
+    const { data: signed } = await supabase.storage
+      .from(COVER_BUCKET)
+      .createSignedUrl(project.coverPath, COVER_SIGNED_URL_TTL);
+    project.coverUrl = signed?.signedUrl ?? null;
+  }
+  return project;
 }
