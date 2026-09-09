@@ -8,6 +8,8 @@ import {
   type StudyActionResult,
 } from "@/lib/study/actions";
 import type { StudySession } from "@/lib/study/types";
+import type { Evidence } from "@/lib/evidence/types";
+import { EvidenceList } from "@/components/evidence/evidence-list";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
 import { Field } from "@/components/ui/field";
@@ -20,6 +22,7 @@ const INITIAL: StudyActionResult = { ok: false };
 export function SessionForm({
   onClose,
   session,
+  evidence,
   defaultDate,
   defaultTopicId,
   topics,
@@ -27,6 +30,7 @@ export function SessionForm({
 }: {
   onClose: () => void;
   session?: StudySession;
+  evidence?: Evidence[];
   defaultDate: string;
   defaultTopicId?: string;
   topics: { id: string; title: string }[];
@@ -132,6 +136,12 @@ export function SessionForm({
           </Button>
         </div>
       </form>
+
+      {session ? (
+        <div className="mt-6 border-t border-border pt-4">
+          <EvidenceList context="study" contextId={session.id} items={evidence ?? []} />
+        </div>
+      ) : null}
     </Drawer>
   );
 }

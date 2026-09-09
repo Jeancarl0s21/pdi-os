@@ -4,6 +4,7 @@ import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import type { StudySession } from "@/lib/study/types";
+import type { Evidence } from "@/lib/evidence/types";
 import { Button } from "@/components/ui/button";
 import { StudyFilters } from "./study-filters";
 import { SessionList } from "./session-list";
@@ -11,6 +12,7 @@ import { SessionForm } from "./session-form";
 
 export function StudyView({
   sessions,
+  evidenceBySession,
   topics,
   modules,
   projects,
@@ -19,6 +21,7 @@ export function StudyView({
   prefillTopicId,
 }: {
   sessions: StudySession[];
+  evidenceBySession: Record<string, Evidence[]>;
   topics: { id: string; title: string }[];
   modules: { id: string; title: string }[];
   projects: { id: string; name: string }[];
@@ -69,6 +72,7 @@ export function StudyView({
         <SessionForm
           onClose={() => setEditing(null)}
           session={editing}
+          evidence={evidenceBySession[editing.id] ?? []}
           defaultDate={today}
           topics={topics}
           projects={projects}

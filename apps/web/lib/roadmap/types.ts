@@ -1,4 +1,5 @@
 import type { ContentDidacticBody, RoadmapProgress, TopicStatus } from "@pdi-os/domain";
+import type { Evidence } from "@/lib/evidence/types";
 
 export interface RoadmapModuleSummary {
   id: string;
@@ -68,6 +69,7 @@ export interface RoadmapActivity {
   externalUrl: string | null;
   resources: string[];
   completedAt: string | null;
+  evidence: Evidence[];
 }
 
 export interface RoadmapMaterial {
