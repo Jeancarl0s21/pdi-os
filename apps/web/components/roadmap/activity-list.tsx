@@ -1,6 +1,11 @@
-import { Check, ExternalLink } from "lucide-react";
+"use client";
+
+import { Check, ExternalLink, RotateCcw } from "lucide-react";
+import { setActivityCompleted } from "@/lib/roadmap/actions";
+import { useServerMutation } from "@/lib/hooks/use-server-mutation";
 import type { RoadmapActivity } from "@/lib/roadmap/types";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 function Detail({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
@@ -16,6 +21,7 @@ function Detail({ label, value }: { label: string; value: string | null }) {
 
 function ActivityCard({ activity }: { activity: RoadmapActivity }) {
   const done = activity.completedAt !== null;
+  const [toggle, toggling] = useServerMutation(setActivityCompleted);
   return (
     <li className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
       <div className="flex items-start gap-3">
@@ -57,17 +63,30 @@ function ActivityCard({ activity }: { activity: RoadmapActivity }) {
         </ul>
       ) : null}
 
-      {activity.externalUrl ? (
-        <a
-          href={activity.externalUrl}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="inline-flex w-fit items-center gap-1.5 text-sm text-primary hover:underline"
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          size="sm"
+          variant={done ? "ghost" : "primary"}
+          disabled={toggling}
+          onClick={() => toggle({ id: activity.id, completed: done ? "false" : "true" })}
         >
-          <ExternalLink aria-hidden className="size-4" />
-          Abrir ambiente
-        </a>
-      ) : null}
+          {done ? <RotateCcw aria-hidden /> : <Check aria-hidden />}
+          {done ? "Reabrir" : "Concluir"}
+        </Button>
+
+        {activity.externalUrl ? (
+          <a
+            href={activity.externalUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+          >
+            <ExternalLink aria-hidden className="size-4" />
+            Abrir ambiente
+          </a>
+        ) : null}
+      </div>
     </li>
   );
 }
