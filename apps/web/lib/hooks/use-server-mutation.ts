@@ -2,16 +2,16 @@
 
 import { useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { TaskActionResult } from "@/lib/tasks/actions";
+import type { ActionResult } from "@/lib/action-result";
 
-type TaskAction = (prev: TaskActionResult, formData: FormData) => Promise<TaskActionResult>;
+type ServerAction = (prev: ActionResult, formData: FormData) => Promise<ActionResult>;
 
 /**
- * Fire a one-shot Task server action (move / archive / restore) from a button
- * and refresh the server tree on success. Returns `[run, pending]`.
+ * Fire a one-shot server action (move / archive / restore / …) from a button and
+ * refresh the server tree on success. Returns `[run, pending]`.
  */
-export function useTaskMutation(
-  action: TaskAction,
+export function useServerMutation(
+  action: ServerAction,
 ): [(fields: Record<string, string>) => void, boolean] {
   const router = useRouter();
   const [pending, startTransition] = useTransition();

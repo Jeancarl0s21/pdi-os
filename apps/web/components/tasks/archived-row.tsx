@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { Task } from "@/lib/tasks/types";
 import { TaskMeta } from "./task-meta";
-import { useTaskMutation } from "./use-task-mutation";
+import { useServerMutation } from "@/lib/hooks/use-server-mutation";
 
 function formatArchivedAt(value: string) {
   return new Date(value).toLocaleDateString("pt-BR", {
@@ -18,7 +18,7 @@ function formatArchivedAt(value: string) {
 }
 
 export function ArchivedRow({ task }: { task: Task }) {
-  const [restore, pending] = useTaskMutation(restoreTask);
+  const [restore, pending] = useServerMutation(restoreTask);
 
   return (
     <div className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
