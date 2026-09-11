@@ -4409,7 +4409,7 @@
             "slug": "cross-cloud-equivalences",
             "title": "Equivalências AWS/GCP/Fabric e portabilidade conceitual",
             "recommended_level": "Pleno",
-            "priority": "Selective",
+            "priority": "Advanced",
             "description": "Reconhecer padrões equivalentes sem transformar o roadmap em três certificações de cloud.",
             "contents": [
               {
