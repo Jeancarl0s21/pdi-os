@@ -32,6 +32,19 @@ const tableColumns: Record<string, string[]> = {
   project_topics: [],
 };
 
+// jsonb columns whose value can be a JS array (`resources`) or object
+// (`didactic_payload`). node-postgres serializes a JS array parameter as a
+// Postgres array literal (`{a,b}`), which a jsonb column rejects with 22P02 —
+// so these are stringified to JSON text before binding.
+const jsonbColumns: Record<string, Set<string>> = {
+  contents: new Set(["didactic_payload"]),
+  activities: new Set(["resources"]),
+};
+
+function bindValue(table: string, column: string, value: unknown): unknown {
+  return jsonbColumns[table]?.has(column) ? JSON.stringify(value ?? null) : value;
+}
+
 function editorialHash(row: Existing, entity: ManifestEntity): string {
   const cols = tableColumns[entity.entityType] ?? [];
   const payload = Object.fromEntries(cols.map((c) => [c, row[c] ?? null]));
@@ -187,7 +200,7 @@ export async function applyImport(
         continue;
       }
       const { table, columns } = identifiers(e);
-      const values = columns.map((c) => e.payload[c]);
+      const values = columns.map((c) => bindValue(table, c, e.payload[c]));
       let parentCol: string | undefined, parentId: string | undefined;
       if (e.parentSourceKey) {
         const parents: Record<string, [string, string]> = {
